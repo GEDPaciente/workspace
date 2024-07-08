@@ -10,6 +10,16 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: 🔒 Verificar GitHub Token
+      run: |
+        if [ -z "${{ inputs.github_token }}" ]; then
+          echo "GitHub Token não fornecido."
+          exit 1
+        else
+          echo "GitHub Token está presente."
+        fi
+      shell: bash
+
     - name: 🚚 Atualizando projeto
       uses: actions/checkout@v3
       with:
