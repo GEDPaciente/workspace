@@ -5,7 +5,18 @@ inputs:
     description: 'Nova versão para ser definida no pom.xml'
     required: true
 runs:
-  version-show:
-    using: shell
-    run: echo "Version: ${{ inputs.version }}"
+  using: 'composite'
+  steps:
+    - name: 🚚 Checkout Project
+      uses: actions/checkout@v3
+
+    - name: 📝 Obtem a Versão do workspace
+      run: |
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "Versão atual no POM: $CURRENT_VERSION"
+        if [ "$CURRENT_VERSION" == "${{ inputs.version }}" ]; then
+          echo "Versão atual do POM já é $CURRENT_VERSION. Nenhuma atualização necessária."
+          echo "skip_commit=true" >> $GITHUB_ENV
+        fi
+      shell: bash
     
