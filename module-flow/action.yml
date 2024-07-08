@@ -1,0 +1,22 @@
+name: '🎛️ Module FLOW'
+description: 'Fluxo de atualização do Modulo'
+inputs:
+  release_branch:
+    description: 'Branch de release'
+    required: true
+  github-token:
+    description: 'Token de acesso ao Github'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: 🚚 Checkout Project
+      uses: actions/checkout@v3
+
+    - name: Configure Github Token
+      run: git config --global url."https://x-access-token:${MY_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+      shell: bash
+
+    - name: Submodules Clone
+      run: git submodule update --init --recursive
+      shell: bash
