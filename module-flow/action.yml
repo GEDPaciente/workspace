@@ -7,9 +7,6 @@ inputs:
   github_token:
     description: 'Token de acesso ao Github'
     required: true
-  actual_branch:
-    description: 'Branch atual'
-    required: true
 runs:
   using: 'composite'
   steps:
