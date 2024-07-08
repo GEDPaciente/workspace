@@ -14,17 +14,8 @@ runs:
       uses: actions/checkout@v3
       with:
         repository: GEDPaciente/mv-ged-workspace
-        token: ${{ inputs.github-token }}
-
-    - name: Configure Github Token
-      run: git config --global url."https://x-access-token:${MY_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-      shell: bash
-      env:
-        MY_GITHUB_TOKEN: ${{ inputs.github-token }}
-
-    - name: Submodules Clone
-      run: git submodule update --init --recursive
-      shell: bash
+        token: ${{ secrets.GED_PAT }}
+        submodules: true
 
     - name: 📝 MVN Build Workspace
       run: mvn clean install
