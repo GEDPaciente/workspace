@@ -21,7 +21,7 @@ runs:
       run: git submodule update --init --recursive
       shell: bash
 
-     - name: 📝 MVN Build Workspace
+    - name: 📝 MVN Build Workspace
       run: mvn clean install
       shell: bash
 
