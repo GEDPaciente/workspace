@@ -10,6 +10,10 @@ runs:
     - name: 🚚 Checkout Project
       uses: actions/checkout@v3
 
+    - name: 📝 MVN Clean Install
+      run: mvn clean install
+      shell: bash
+
     - name: 📝 Obtem a Versão do workspace
       run: mvn help:evaluate -Dexpression=project.version -q -DforceStdout
       shell: bash
