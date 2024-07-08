@@ -1,0 +1,11 @@
+name: '🎛️ Workspace FLOW'
+description: 'Fluxo de atualização do workspace'
+inputs:
+  version:
+    description: 'Nova versão para ser definida no pom.xml'
+    required: true
+runs:
+  version-show:
+    using: shell
+    run: echo "Version: ${{ inputs.version }}"
+    
