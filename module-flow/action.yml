@@ -4,7 +4,7 @@ inputs:
   release_branch:
     description: 'Branch de release'
     required: true
-  github-token:
+  github_token:
     description: 'Token de acesso ao Github'
     required: true
 runs:
@@ -14,7 +14,7 @@ runs:
       uses: actions/checkout@v3
       with:
         repository: GEDPaciente/mv-ged-workspace
-        token: ${{ secrets.GED_PAT }}
+        token: ${{ inputs.github_token }}
         submodules: true
 
     - name: 📝 MVN Build Workspace
