@@ -41,6 +41,9 @@ runs:
       uses: GEDPaciente/workflows/get-and-check-version@main
       with:
         release_branch: ${{ inputs.release_branch }}
+        github_token: ${{ inputs.github_token }}
+        repository: GEDPaciente/mv-ged-workspace
+        submodules: true
 
     - name: 📝 Atualiza a versão no pom.xml
       run: |

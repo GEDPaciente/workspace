@@ -5,6 +5,17 @@ inputs:
     description: 'Branch de release para a qual a versão será incrementada.'
     required: false
     default: 'main'
+  repository:
+    description: 'Repositório do qual a versão será obtida.'
+    required: false
+    default: ${{ github.repository }}
+  github_token:
+    description: 'Token de acesso ao Github.'
+    required: true
+  submodules:
+    description: 'Se os submódulos devem ser atualizados.'
+    required: false
+    default: false
 outputs:
   version:
     description: 'A próxima versão do projeto.'
@@ -14,6 +25,11 @@ runs:
   steps:
     - name: Checkout Project
       uses: actions/checkout@v3
+      with:
+        repository: ${{ inputs.repository }}
+        token: ${{ inputs.github_token }}
+        submodules: ${{ inputs.submodules }}
+        ref: ${{ github.ref }}
 
     - name: Get Next Version
       id: get_version
