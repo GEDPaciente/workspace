@@ -28,10 +28,6 @@ runs:
         submodules: true
         ref: ${{ github.ref }}
 
-    - name: 📝 MVN Build Workspace
-      run: mvn clean install
-      shell: bash
-
     - name: 📝 Obtem a Versão do workspace
       run: mvn help:evaluate -Dexpression=project.version -q -DforceStdout
       shell: bash
