@@ -1,0 +1,104 @@
+name: '✅ Validar Variáveis de Ambiente'
+description: 'Valida variáveis de ambiente essenciais'
+inputs:
+  now:
+    description: 'Variável now'
+    required: true
+  version:
+    description: 'Variável version'
+    required: true
+  version_semantic:
+    description: 'Variável version_semantic'
+    required: true
+  release_branch:
+    description: 'Variável release_branch'
+    required: true
+  archive_name:
+    description: 'Variável archive_name'
+    required: true
+  module:
+    description: 'Variável module'
+    required: true
+  folder:
+    description: 'Variável folder'
+    required: true
+  module_name:
+    description: 'Variável module_name'
+    required: true
+  branch_name:
+    description: 'Variável branch_name'
+    required: true
+  module_description:
+    description: 'Variável module_description'
+    required: true
+    
+runs:
+  using: 'composite'
+  steps:
+    - run: |
+        echo "Validando variáveis de ambiente..."
+
+        if [ -z "$NOW" ]; then
+          echo "Erro: A variável NOW não foi definida corretamente."
+          echo "Valor atual: $NOW"
+          exit 1
+        elif [ -z "$VERSION" ]; then
+          echo "Erro: A variável VERSION não foi definida corretamente."
+          echo "Valor atual: $VERSION"
+          exit 1
+        elif [ -z "$VERSION_SEMANTIC" ]; then
+          echo "Erro: A variável VERSION_SEMANTIC não foi definida corretamente."
+          echo "Valor atual: $VERSION_SEMANTIC"
+          exit 1
+        elif [ -z "$RELEASE_BRANCH" ]; then
+          echo "Erro: A variável RELEASE_BRANCH não foi definida corretamente."
+          echo "Valor atual: $RELEASE_BRANCH"
+          exit 1
+        elif [ -z "$ARCHIVE_NAME" ]; then
+          echo "Erro: A variável ARCHIVE_NAME não foi definida corretamente."
+          echo "Valor atual: $ARCHIVE_NAME"
+          exit 1
+        elif [ -z "$MODULE" ]; then
+          echo "Erro: A variável MODULE não foi definida corretamente."
+          echo "Valor atual: $MODULE"
+          exit 1
+        elif [ -z "$FOLDER" ]; then
+          echo "Erro: A variável FOLDER não foi definida corretamente."
+          echo "Valor atual: $FOLDER"
+          exit 1
+        elif [ -z "$MODULE_NAME" ]; then
+          echo "Erro: A variável MODULE_NAME não foi definida corretamente."
+          echo "Valor atual: $MODULE_NAME"
+          exit 1
+        elif [ -z "$BRANCH_NAME" ]; then
+          echo "Erro: A variável BRANCH_NAME não foi definida corretamente."
+          echo "Valor atual: $BRANCH_NAME"
+          exit 1
+        elif [ -z "$MODULE_DESCRIPTION" ]; then
+          echo "Erro: A variável MODULE_DESCRIPTION não foi definida corretamente."
+          echo "Valor atual: $MODULE_DESCRIPTION"
+          exit 1
+        else
+          echo "NOW: $NOW"
+          echo "VERSION: $VERSION"
+          echo "VERSION_SEMANTIC: $VERSION_SEMANTIC"
+          echo "RELEASE_BRANCH: $RELEASE_BRANCH"
+          echo "ARCHIVE_NAME: $ARCHIVE_NAME"
+          echo "MODULE: $MODULE"
+          echo "FOLDER: $FOLDER"
+          echo "MODULE_NAME: $MODULE_NAME"
+          echo "BRANCH_NAME: $BRANCH_NAME"
+          echo "Variáveis de ambiente validadas com sucesso!"
+        fi
+      shell: bash
+      env:
+        NOW: ${{ inputs.now }}
+        VERSION: ${{ inputs.version }}
+        VERSION_SEMANTIC: ${{ inputs.version_semantic }}
+        RELEASE_BRANCH: ${{ inputs.release_branch }}
+        ARCHIVE_NAME: ${{ inputs.archive_name }}
+        MODULE: ${{ inputs.module }}
+        FOLDER: ${{ inputs.folder }}
+        MODULE_NAME: ${{ inputs.module_name }}
+        BRANCH_NAME: ${{ inputs.branch_name }}
+        MODULE_DESCRIPTION: ${{ inputs.module_description }}

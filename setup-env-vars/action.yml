@@ -1,0 +1,84 @@
+name: '🌋 Configure Environment Variables'
+description: '🌋 Configure environment variables'
+inputs:
+  version:
+    description: 'Project version'
+    required: true
+  release_branch:
+    description: 'Branch to which the version will be incremented.'
+    required: true
+outputs:
+  now:
+    description: 'Variable now'
+    value: ${{ steps.configure-env-vars.outputs.now }}
+  version:
+    description: 'Variable version'
+    value: ${{ inputs.version }}
+  version_semantic:
+    description: 'Variable version_semantic'
+    value: ${{ steps.configure-env-vars.outputs.version_semantic }}
+  archive_name:
+    description: 'Variable archive_name'
+    value: ${{ steps.configure-env-vars.outputs.archive_name }}
+  release_branch:
+    description: 'Variable release_branch'
+    value: ${{ inputs.release_branch }}
+  module:
+    description: 'Variable module'
+    value: ${{ steps.configure-env-vars.outputs.module }}
+  folder:
+    description: 'Variable folder'
+    value: ${{ steps.configure-env-vars.outputs.folder }}
+  module_name:
+    description: 'Variable module_name'
+    value: ${{ steps.configure-env-vars.outputs.module_name }}  
+  branch_name:
+    description: 'Variable branch_name'
+    value: ${{ steps.configure-env-vars.outputs.branch_name }}
+  module_description:
+    description: 'Variable module_description'
+    value: ${{ steps.configure-env-vars.outputs.module_description }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure Environment Variables
+      id: configure-env-vars
+      run: |
+        NOW=$(date +'%Y%m%d%H%M%S')
+        VERSION_SEMANTIC="v$VERSION"
+
+        MODULE=$(jq -r '.name' package.json)
+        MODULE=$(echo $MODULE | sed 's/module-//g')
+
+        FOLDER="module-$MODULE"
+        MODULE_NAME=$(echo $MODULE | tr '[:lower:]' '[:upper:]')
+        BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})
+
+        ARCHIVE_NAME="$MODULE_NAME-RELEASE-$VERSION_SEMANTIC-$NOW"
+
+        echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
+        echo "now=$NOW" >> $GITHUB_OUTPUT
+        echo "module=$MODULE" >> $GITHUB_OUTPUT
+        echo "folder=$FOLDER" >> $GITHUB_OUTPUT
+        echo "module_name=$MODULE_NAME" >> $GITHUB_OUTPUT
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "version_semantic=$VERSION_SEMANTIC" >> $GITHUB_OUTPUT
+        echo "release_branch=$RELEASE_BRANCH" >> $GITHUB_OUTPUT
+        echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+        echo "module_description=$(jq -r '.description' package.json)" >> $GITHUB_OUTPUT
+
+        echo "A variável NOW foi definida como: $NOW"
+        echo "A variável VERSION foi criada: v$VERSION"
+        echo "A variável VERSION_SEMANTIC foi criada: $VERSION_SEMANTIC"
+        echo "A variável ARCHIVE_NAME foi criada: $ARCHIVE_NAME"
+        echo "A variável RELEASE_BRANCH foi criada: $RELEASE_BRANCH"
+        echo "A variável MODULE foi criada: $MODULE"
+        echo "A variável FOLDER foi criada: $FOLDER"
+        echo "A variável MODULE_NAME foi criada: $MODULE_NAME"
+        echo "A variável BRANCH_NAME foi criada: $BRANCH_NAME"
+        echo "A variável MODULE_DESCRIPTION foi criada: $(jq -r '.description' package.json)"
+        
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        RELEASE_BRANCH: ${{ inputs.release_branch }}

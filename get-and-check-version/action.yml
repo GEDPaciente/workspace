@@ -1,0 +1,30 @@
+name: '🌠 Obter e Verificar Versão'
+description: '🌠 Realiza checkout do projeto, obtém a próxima versão e verifica essa versão.'
+inputs:
+  release_branch:
+    description: 'Branch de release para a qual a versão será incrementada.'
+    required: false
+    default: 'main'
+outputs:
+  version:
+    description: 'A próxima versão do projeto.'
+    value: ${{ steps.get_version.outputs.version }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout Project
+      uses: actions/checkout@v3
+
+    - name: Get Next Version
+      id: get_version
+      uses: reecetech/version-increment@2023.9.3
+      with:
+        scheme: calver
+        increment: patch
+        release_branch: ${{ inputs.release_branch }}    
+    
+    - name: Print Version and Branch
+      run: |
+        echo "Versão Atual do projeto: v${{ steps.get_version.outputs.version }}"
+        echo "Branch de release: ${{ inputs.release_branch }}"
+      shell: bash
