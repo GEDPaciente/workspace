@@ -4,26 +4,29 @@ inputs:
   release_branch:
     description: 'Branch de release'
     required: true
-  github-token:
+  github_token:
     description: 'Token de acesso ao Github'
     required: true
 runs:
   using: 'composite'
   steps:
+    - name: 🔒 Verificar GitHub Token
+      run: |
+        if [ -z "${{ inputs.github_token }}" ]; then
+          echo "GitHub Token não fornecido."
+          exit 1
+        else
+          echo "GitHub Token está presente."
+        fi
+      shell: bash
+
     - name: 🚚 Atualizando projeto
       uses: actions/checkout@v3
       with:
         repository: GEDPaciente/mv-ged-workspace
-        token: ${{ secrets.ENDEMS_PAT }}
-        ref: ${{ needs.module-update.outputs.branch_name }}
-
-    - name: Configure Github Token
-      run: git config --global url."https://x-access-token:${MY_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-      shell: bash
-
-    - name: Submodules Clone
-      run: git submodule update --init --recursive
-      shell: bash
+        token: ${{ inputs.github_token }}
+        submodules: true
+        ref: ${{ github.ref }}
 
     - name: 📝 MVN Build Workspace
       run: mvn clean install
