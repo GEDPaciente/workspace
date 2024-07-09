@@ -38,7 +38,7 @@ runs:
 
     - name: 📝 Gera a nova versão
       id: get_new_version
-      uses: GedPaciente/workflows/get-and-check-version
+      uses: GEDPaciente/workflows/get-and-check-version@main
       with:
         release_branch: ${{ inputs.release_branch }}
 
