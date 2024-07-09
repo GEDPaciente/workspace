@@ -29,5 +29,27 @@ runs:
         ref: ${{ github.ref }}
 
     - name: 📝 Obtem a Versão do workspace
-      run: mvn help:evaluate -Dexpression=project.version -q -DforceStdout
+      id: get_actual_version
+      run: |
+        echo "Obtendo versão do pom.xml"
+        ACTUAL_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "::set-output name=version::$ACTUAL_VERSION"
+      shell: bash
+
+    - name: 📝 Gera a nova versão
+      id: get_new_version
+      uses: GedPaciente/workflows/get-and-check-version
+      with:
+        release_branch: ${{ inputs.release_branch }}
+
+    - name: 📝 Atualiza a versão no pom.xml
+      run: |
+        echo "Atualizando versão no pom.xml"
+        mvn versions:set -DnewVersion=${{ steps.get_new_version.outputs.version }} -DgenerateBackupPoms=false
+      shell: bash
+
+    - name: Apresenta nova versão
+      run: |
+        ACTUAL_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "Nova versão do projeto: $ACTUAL_VERSION"
       shell: bash
