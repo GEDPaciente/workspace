@@ -17,7 +17,7 @@ runs:
     - name: Verificar versão
       run: |
         git pull
-        CURRENT_VERSION$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão atual: $CURRENT_VERSION"
         if [ "$CURRENT_VERSION" == "${{ inputs.version }}" ]; then
           echo "Versão atual já é $CURRENT_VERSION. Nenhuma atualização necessária."
