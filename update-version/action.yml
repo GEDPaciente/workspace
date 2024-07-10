@@ -4,9 +4,6 @@ inputs:
   version:
     description: 'Nova versão para ser definida no package.json.'
     required: true
-  version_semantic:
-    description: 'Versão semântica para ser apresentada.'
-    required: true
 runs:
   using: 'composite'
   steps:
@@ -45,11 +42,10 @@ runs:
         git config --local user.name "GitHub Action"
         
         git add package.json
-        git commit -m "RELEASE-$VERSION_SEMANTIC"
+        git commit -m "RELEASE-v$VERSION"
         
         git push
         echo "Versão atualizada para $VERSION"
       shell: bash
       env:
         VERSION: ${{ inputs.version }}
-        VERSION_SEMANTIC: ${{ inputs.version_semantic }}
