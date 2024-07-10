@@ -29,7 +29,7 @@ runs:
 
         if [ -f package.json ]; then
           echo "Atualizando versão no package.json"
-          jq '.version = "${{ inputs.version }}"' package.json > package.json.tmp
+          jq --arg version "${{ inputs.version }}" '.version = $version' package.json > package.json.tmp
           mv package.json.tmp package.json
         fi
 
@@ -43,11 +43,15 @@ runs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         
-        git add package.json
-        git commit -m "RELEASE-v$VERSION"
+        git add pom.xml
         
+        if [ -f package.json ]; then
+          git add package.json
+        fi
+        
+        git commit -m "RELEASE-${{ inputs.version_semantic }}"
         git push
-        echo "Versão atualizada para $VERSION"
+        echo "Versão atualizada para ${{ inputs.version }}"
       shell: bash
       env:
         VERSION: ${{ inputs.version }}
