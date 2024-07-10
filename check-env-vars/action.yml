@@ -28,9 +28,6 @@ inputs:
   branch_name:
     description: 'Variável branch_name'
     required: true
-  module_description:
-    description: 'Variável module_description'
-    required: true
     
 runs:
   using: 'composite'
@@ -74,10 +71,6 @@ runs:
           echo "Erro: A variável BRANCH_NAME não foi definida corretamente."
           echo "Valor atual: $BRANCH_NAME"
           exit 1
-        elif [ -z "$MODULE_DESCRIPTION" ]; then
-          echo "Erro: A variável MODULE_DESCRIPTION não foi definida corretamente."
-          echo "Valor atual: $MODULE_DESCRIPTION"
-          exit 1
         else
           echo "NOW: $NOW"
           echo "VERSION: $VERSION"
@@ -101,4 +94,3 @@ runs:
         FOLDER: ${{ inputs.folder }}
         MODULE_NAME: ${{ inputs.module_name }}
         BRANCH_NAME: ${{ inputs.branch_name }}
-        MODULE_DESCRIPTION: ${{ inputs.module_description }}

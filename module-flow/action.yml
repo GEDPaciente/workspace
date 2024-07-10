@@ -1,8 +1,15 @@
-name: '🎛️ Module FLOW'
+name: '🎛️ Atualização de Modulos'
 description: 'Fluxo de atualização do Modulo'
 inputs:
-  release_branch:
-    description: 'Branch de release'
+  branch_name:
+    description: 'Branch para commitar nos projetos e workspace'
+    required: false
+    default: develop
+  version:
+    description: 'Versão para atualizar'
+    required: true
+  version_semantic:
+    description: 'Versão para atualizar semantica'
     required: true
   github_token:
     description: 'Token de acesso ao Github'
@@ -25,30 +32,45 @@ runs:
       with:
         repository: GEDPaciente/mv-ged-workspace
         token: ${{ inputs.github_token }}
-        submodules: true
-        ref: ${{ github.ref }}
+        ref: ${{ inputs.branch_name }}
 
-    - name: 📝 Obtem a Versão do workspace
-      id: get_actual_version
+    - name: Clona submodulos
       run: |
-        echo "Obtendo versão do pom.xml"
-        ACTUAL_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "::set-output name=version::$ACTUAL_VERSION"
+        git config --global url."https://x-access-token:${MY_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+        git submodule update --init --recursive
+        git submodule foreach '
+          git checkout $branch_name
+          git fetch --all
+          git pull
+        '
+      env:
+        MY_GITHUB_TOKEN: ${{ inputs.github_token }}
+        branch_name: ${{ inputs.branch_name }}
       shell: bash
-
-    - name: 📝 Gera a nova versão
-      id: get_new_version
-      uses: GEDPaciente/workflows/get-and-check-version@main
-      with:
-        release_branch: ${{ inputs.release_branch }}
-        github_token: ${{ inputs.github_token }}
-        repository: GEDPaciente/mv-ged-workspace
-        submodules: true
+        
+    - name: 📝 Apresenta a branch atual de cada submódulo
+      run: |
+        echo "Apresentando a branch atual de cada submódulo"
+        git submodule foreach '
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          echo "Submódulo: $name, Branch atual: $CURRENT_BRANCH"
+        '
+      shell: bash
 
     - name: 📝 Atualiza a versão no pom.xml
       run: |
         echo "Atualizando versão no pom.xml"
-        mvn versions:set -DnewVersion=${{ steps.get_new_version.outputs.version }} -DgenerateBackupPoms=false
+        mvn versions:set -DnewVersion=${{ inputs.version }} -DgenerateBackupPoms=false
+      shell: bash
+
+    - name: 📝 Atualiza versão do package.json do mv-ged-ui
+      run: |
+        echo "Atualizando versão no package.json"
+        cd mv-ged-ui
+        cp package.json package.json.bak
+        jq '.version = "${{ inputs.version }}"' package.json.bak > package.json
+        rm package.json.bak
+        cd ..
       shell: bash
 
     - name: Apresenta nova versão
@@ -56,3 +78,50 @@ runs:
         ACTUAL_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Nova versão do projeto: $ACTUAL_VERSION"
       shell: bash
+
+    - name: Configura GIT
+      run: |
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+      shell: bash
+
+    - name: 📝 Commita a nova versão em cada um dos Módulos
+      run: |
+        echo "Commitando a nova versão em cada submódulo"
+        git submodule foreach '
+          echo "Atualizando submódulo $name"
+          git checkout $BRANCH
+          git pull origin $BRANCH
+          if [ -f package.json ]; then
+            git add package.json
+          fi
+          git add pom.xml
+          echo "Diferenças no submódulo $name:"
+          git diff --cached
+          if git diff-index --quiet HEAD --; then
+            echo "Nada a commitar em $name"
+          else
+            git commit -m "Atualizando versão do projeto para $VERSION_SEMANTIC"
+            git push origin HEAD:$BRANCH
+          fi
+        '
+      shell: bash
+      env:
+        VERSION_SEMANTIC: ${{ inputs.version_semantic }}
+        BRANCH: ${{ github.head_ref || github.ref_name }}
+
+    - name: 📝 Commita a nova versão no workspace
+      run: |
+        echo "Commitando a nova versão no workspace"
+        git add pom.xml
+        for submodule in $(git submodule --quiet foreach 'echo $sm_path'); do
+          if [ -n "$(git -C $submodule status --porcelain)" ]; then
+            git add $submodule
+          fi
+        done
+        git commit -m "Atualizando versão do projeto e apontamentos dos submódulos para $VERSION_SEMANTIC"
+        git push origin HEAD:$BRANCH
+      shell: bash
+      env:
+        VERSION_SEMANTIC: ${{ inputs.version_semantic }}
+        BRANCH: ${{ github.head_ref || github.ref_name }}

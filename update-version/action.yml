@@ -1,0 +1,55 @@
+name: '🎛️ Atualizar Versão'
+description: 'Atualiza a versão no package.json e realiza um commit.'
+inputs:
+  version:
+    description: 'Nova versão para ser definida no package.json.'
+    required: true
+  version_semantic:
+    description: 'Versão semântica para ser apresentada.'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: 🚚 Checkout Project
+      uses: actions/checkout@v3
+
+    - name: Verificar versão
+      run: |
+        git pull
+        CURRENT_VERSION=$(xmllint --xpath "string(//project/version)" pom.xml)
+        echo "Versão atual: $CURRENT_VERSION"
+        if [ "$CURRENT_VERSION" == "${{ inputs.version }}" ]; then
+          echo "Versão atual já é $CURRENT_VERSION. Nenhuma atualização necessária."
+          echo "skip_commit=true" >> $GITHUB_ENV
+        fi
+      shell: bash
+
+    - name: 📝 Update Version
+      if: env.skip_commit != 'true'
+      run: |
+        echo "Atualizando versão para ${{ inputs.version }}"
+        xmlstarlet ed --inplace -u "//project/version" -v "${{ inputs.version }}" pom.xml
+
+        if [ -f package.json ]; then
+          echo "Atualizando versão no package.json"
+          jq '.version = "${{ inputs.version }}"' package.json > package.json.tmp
+          mv package.json.tmp package.json
+        fi
+        
+      shell: bash
+
+    - name: Commit
+      if: env.skip_commit != 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        git add package.json
+        git commit -m "RELEASE-$VERSION_SEMANTIC"
+        
+        git push
+        echo "Versão atualizada para $VERSION"
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        VERSION_SEMANTIC: ${{ inputs.version_semantic }}

@@ -20,6 +20,9 @@ outputs:
   version:
     description: 'A próxima versão do projeto.'
     value: ${{ steps.get_version.outputs.version }}
+  release_branch:
+    description: 'A Branch de release do Projeto.'
+    value: ${{ inputs.release_branch }}
 runs:
   using: 'composite'
   steps:
