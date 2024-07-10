@@ -13,7 +13,7 @@ runs:
     - name: Verificar versão
       run: |
         git pull
-        CURRENT_VERSION=$(xmlstarlet sel -t -v "/project/version" pom.xml)
+        CURRENT_VERSION$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão atual: $CURRENT_VERSION"
         if [ "$CURRENT_VERSION" == "${{ inputs.version }}" ]; then
           echo "Versão atual já é $CURRENT_VERSION. Nenhuma atualização necessária."
@@ -25,8 +25,8 @@ runs:
       if: env.skip_commit != 'true'
       run: |
         echo "Atualizando versão para ${{ inputs.version }}"
-        xmlstarlet ed --inplace -u "/project/version" -v "${{ inputs.version }}" pom.xml
-
+        mvn versions:set -DnewVersion=${{ inputs.version }} -DgenerateBackupPoms=false
+        
         if [ -f package.json ]; then
           echo "Atualizando versão no package.json"
           jq --arg version "${{ inputs.version }}" '.version = $version' package.json > package.json.tmp
