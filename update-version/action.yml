@@ -32,11 +32,13 @@ runs:
           jq '.version = "${{ inputs.version }}"' package.json > package.json.tmp
           mv package.json.tmp package.json
         fi
+
+        git diff
         
       shell: bash
 
     - name: Commit
-      if: env.skip_commit != 'true'
+      if: env.skip_commit != 'true' && 1 == 0
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
