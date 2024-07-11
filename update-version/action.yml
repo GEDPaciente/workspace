@@ -1,19 +1,22 @@
 name: '🎛️ Atualizar Versão'
-description: 'Atualiza a versão no package.json e realiza um commit.'
+description: 'Atualiza a versão do modulo e realiza um commit.'
 inputs:
   version:
-    description: 'Nova versão para ser definida no package.json.'
+    description: 'Nova versão para ser definida no modulo.'
     required: true
+  github_token:
+    description: 'Token para clonar workspace'
+    required: true 
 runs:
   using: 'composite'
   steps:
     - name: 'Checkout Workspace Repository'
-        uses: actions/checkout@v3
-        with:
-          repository: GedPaciente/mv-ged-workspace
-          token: ${{ secrets.GED_PAT }}
-          path: workspace
-          ref: ${{ github.ref }}
+      uses: actions/checkout@v3
+      with:
+        repository: GedPaciente/mv-ged-workspace
+        token: ${{ inputs.github_token }}
+        path: workspace
+        ref: ${{ github.ref }}
         
     - name: 'Set up JDK 17'
       uses: actions/setup-java@v4
@@ -26,6 +29,7 @@ runs:
         cd workspace
         mvn clean install -N
         cd ..
+      shell: bash
 
     - name: 🚚 Checkout Project
       uses: actions/checkout@v3
