@@ -7,6 +7,26 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: 'Checkout Workspace Repository'
+        uses: actions/checkout@v3
+        with:
+          repository: GedPaciente/mv-ged-workspace
+          token: ${{ secrets.GED_PAT }}
+          path: workspace
+          ref: ${{ github.ref }}
+        
+    - name: 'Set up JDK 17'
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'corretto'
+        java-version: '17'
+        
+    - name: 'Build Workspace'
+      run: |
+        cd workspace
+        mvn clean install -N
+        cd ..
+
     - name: 🚚 Checkout Project
       uses: actions/checkout@v3
 
