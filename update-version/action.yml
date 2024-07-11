@@ -29,6 +29,7 @@ runs:
         cd workspace
         mvn clean install -N
         cd ..
+      shell: bash
 
     - name: 🚚 Checkout Project
       uses: actions/checkout@v3
