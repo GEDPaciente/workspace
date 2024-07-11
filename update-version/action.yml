@@ -74,7 +74,10 @@ runs:
           git add package.json
         fi
         
-        git commit -m "VERSION-${{ inputs.version_semantic }}"
+        git commit -m "Atualização de Versão - $VERSION_SEMANTIC"
         git push
-        echo "Versão atualizada para ${{ inputs.version }}"
+        echo "Versão atualizada para $VERSION"
       shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        VERSION_SEMANTIC: ${{ inputs.version_semantic }}
