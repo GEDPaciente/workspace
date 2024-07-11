@@ -16,12 +16,7 @@ runs:
 
     - name: Verificar versão
       run: |
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        
-        echo "Versão atual: $CURRENT_VERSION"
-        if [ "$CURRENT_VERSION" == "${{ inputs.version }}" ]; then
-          echo "Versão atual já é $CURRENT_VERSION. Nenhuma atualização necessária."
-        fi
+        mvn help:evaluate -Dexpression=project.version -q -DforceStdout
       shell: bash
 
     - name: 📝 Update Version
