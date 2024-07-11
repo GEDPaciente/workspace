@@ -1,9 +1,12 @@
 name: '🎛️ Atualizar Versão'
-description: 'Atualiza a versão no package.json e realiza um commit.'
+description: 'Atualiza a versão do modulo e realiza um commit.'
 inputs:
   version:
-    description: 'Nova versão para ser definida no package.json.'
+    description: 'Nova versão para ser definida no modulo.'
     required: true
+  github_token:
+    description: 'Token para clonar workspace'
+    required: true 
 runs:
   using: 'composite'
   steps:
@@ -11,7 +14,7 @@ runs:
       uses: actions/checkout@v3
       with:
         repository: GedPaciente/mv-ged-workspace
-        token: ${{ secrets.GED_PAT }}
+        token: ${{ inputs.github_token }}
         path: workspace
         ref: ${{ github.ref }}
         
