@@ -21,7 +21,6 @@ runs:
         echo "Versão atual: $CURRENT_VERSION"
         if [ "$CURRENT_VERSION" == "${{ inputs.version }}" ]; then
           echo "Versão atual já é $CURRENT_VERSION. Nenhuma atualização necessária."
-          echo "skip_commit=true" >> $GITHUB_ENV
         fi
       shell: bash
 
@@ -39,7 +38,7 @@ runs:
       shell: bash
 
     - name: Commit
-      if: env.skip_commit != 'true' && 1 == 0
+      if:  1 == 0
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
