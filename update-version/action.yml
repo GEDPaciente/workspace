@@ -10,6 +10,17 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: 'Build Core'
+      id: build-core
+      uses: GEDPaciente/workflows/build-core@main
+      with:
+        github_token: ${{ inputs.github_token }}
+
+    - name: 'Finalizado build core'
+      run: |
+        echo "Core Buildado, iniciando clonagem do modulo"
+      shell: bash
+      
     - name: 'Checkout Repository'
       uses: actions/checkout@v3
       with:
@@ -24,7 +35,9 @@ runs:
     - name: 'Build'
       run: |
         cd module
+        echo "Buildando modulo"
         mvn clean install -N -q
+        echo "Modulo Buildado"
       shell: bash
 
     - name: 🚚 Checkout Project
