@@ -38,11 +38,19 @@ runs:
       with:
         distribution: 'corretto'
         java-version: '17'
+    
+    - name: 'Verificar versão'
+      id: get_version
+      run: |
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "Versão do Modulo: $CURRENT_VERSION"
+        echo "module_version=$CURRENT_VERSION" >> $GITHUB_ENV
+      shell: bash
 
     - name: 'Altera versão do GED CORE'
       run: |
         echo "Atualizando versão do GED CORE para $VERSION"
-        mvn versions:set-property -Dproperty="ged.core.version" -DnewVersion="$VERSION"
+        mvn versions:set-property -Dproperty="ged.core.version" -DnewVersion="$VERSION" -DgenerateBackupPoms=false
       shell: bash
       env:
         VERSION: ${{ steps.build-core.outputs.core_version }}
@@ -51,12 +59,40 @@ runs:
       run: mvn clean install -N
       shell: bash
 
-    - name: 'Verificar versão'
-      id: get_version
+    - name: 'Obtem versão atual do core no projeto'
       run: |
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "Versão do Modulo: $CURRENT_VERSION"
-        echo "module_version=$CURRENT_VERSION" >> $GITHUB_ENV
+        VERSION=$(mvn help:evaluate -Dexpression="ged.core.version" -q -DforceStdout)
+
+        echo "Versão do GED CORE: $VERSION"
+        
+        if [ -z "$VERSION" ]; then
+          echo "Versão do GED CORE não encontrada."
+          exit 1
+        fi
+
+        if [ "$VERSION" == "$CORE_LATEST" ]; then
+          echo "Versão do GED CORE já é $CORE_LATEST. Nenhuma atualização necessária."
+          echo "skip_commit=true" >> $GITHUB_ENV
+        fi
+
+        echo "atual_core_version=$VERSION" >> $GITHUB_ENV
       shell: bash
+      env: 
+        CORE_LATEST: ${{ steps.build-core.outputs.core_version }}
+
+    - name: Commit
+      if: env.skip_commit != 'true'
+      run: |
+
+        
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        git add pom.xml
+        git commit -m "Atualiza versão do CORE para $VERSION"
+        git push
+      shell: bash
+      env:
+        VERSION: ${{ steps.build-core.outputs.core_version }}
 
     
