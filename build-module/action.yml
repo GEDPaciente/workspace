@@ -32,20 +32,25 @@ runs:
 
     - name: 🚚 Atualizando projeto
       uses: actions/checkout@v3
+      with:
+        path: module
 
     - name: 'Set up JDK 17'
       uses: actions/setup-java@v4
       with:
         distribution: 'corretto'
         java-version: '17'
-
-    - name: 'Altera versão do GED CORE'
-      run: |
-        echo "Atualizando versão do GED CORE para $VERSION"
-        mvn versions:set-property -Dproperty="ged.core.version" -DnewVersion="$VERSION" -DgenerateBackupPoms=false -B
+        
+    - name: 'Listing all folders'
+      run: ls
       shell: bash
-      env:
-        VERSION: ${{ steps.build-core.outputs.core_version }}
+      
+    - name: 'Altera versão do GED CORE do modulo'
+      run: |
+        cd module
+        echo "Atualizando versão do GED CORE para $core_version"
+        mvn versions:set-property -Dproperty="ged.core.version" -DnewVersion="$core_version" -DgenerateBackupPoms=false -B
+      shell: bash
     
     - name: 'Verificar versão'
       id: get_version
@@ -70,15 +75,13 @@ runs:
           exit 1
         fi
 
-        if [ "$VERSION" == "$CORE_LATEST" ]; then
+        if [ "$VERSION" == "$core_version" ]; then
           echo "Versão do GED CORE já é $CORE_LATEST. Nenhuma atualização necessária."
           echo "skip_commit=true" >> $GITHUB_ENV
         fi
 
         echo "atual_core_version=$VERSION" >> $GITHUB_ENV
       shell: bash
-      env: 
-        CORE_LATEST: ${{ steps.build-core.outputs.core_version }}
 
     - name: Commit
       if: env.skip_commit != 'true'
@@ -87,10 +90,8 @@ runs:
         git config --local user.name "GitHub Action"
         
         git add pom.xml
-        git commit -m "Atualiza versão do CORE para $VERSION"
+        git commit -m "Atualiza versão do CORE para $core_version"
         git push
       shell: bash
-      env:
-        VERSION: ${{ steps.build-core.outputs.core_version }}
 
     
