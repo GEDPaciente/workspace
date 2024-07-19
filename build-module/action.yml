@@ -38,25 +38,25 @@ runs:
       with:
         distribution: 'corretto'
         java-version: '17'
-    
-    - name: 'Verificar versão'
-      id: get_version
-      run: |
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "Versão do Modulo: $CURRENT_VERSION"
-        echo "module_version=$CURRENT_VERSION" >> $GITHUB_ENV
-      shell: bash
 
     - name: 'Altera versão do GED CORE'
       run: |
         echo "Atualizando versão do GED CORE para $VERSION"
-        mvn versions:set-property -Dproperty="ged.core.version" -DnewVersion="$VERSION" -DgenerateBackupPoms=false
+        mvn versions:set-property -Dproperty="ged.core.version" -DnewVersion="$VERSION" -DgenerateBackupPoms=false -B
       shell: bash
       env:
         VERSION: ${{ steps.build-core.outputs.core_version }}
+    
+    - name: 'Verificar versão'
+      id: get_version
+      run: |
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout -B)
+        echo "Versão do Modulo: $CURRENT_VERSION"
+        echo "module_version=$CURRENT_VERSION" >> $GITHUB_ENV
+      shell: bash    
 
     - name: 'Build'
-      run: mvn clean install -N
+      run: mvn clean install -N -B
       shell: bash
 
     - name: 'Obtem versão atual do core no projeto'
@@ -83,8 +83,6 @@ runs:
     - name: Commit
       if: env.skip_commit != 'true'
       run: |
-
-        
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         
