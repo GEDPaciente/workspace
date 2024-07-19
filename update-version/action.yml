@@ -40,9 +40,6 @@ runs:
         echo "Modulo Buildado"
       shell: bash
 
-    - name: 🚚 Checkout Project
-      uses: actions/checkout@v3
-
     - name: Verificar versão
       run: |
         cd module
