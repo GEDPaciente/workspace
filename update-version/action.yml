@@ -10,13 +10,8 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: 'Checkout Workspace Repository'
+    - name: 'Checkout Repository'
       uses: actions/checkout@v3
-      with:
-        repository: GedPaciente/mv-ged-workspace
-        token: ${{ inputs.github_token }}
-        path: workspace
-        ref: ${{ github.ref }}
         
     - name: 'Set up JDK 17'
       uses: actions/setup-java@v4
@@ -24,7 +19,7 @@ runs:
         distribution: 'corretto'
         java-version: '17'
         
-    - name: 'Build Workspace'
+    - name: 'Build'
       run: |
         cd workspace
         mvn clean install -N
@@ -73,6 +68,8 @@ runs:
         if [ -f package.json ]; then
           git add package.json
         fi
+
+        VERSION_SEMANTIC=v$VERSION
         
         git commit -m "Atualização de Versão - $VERSION_SEMANTIC"
         git push
@@ -80,4 +77,3 @@ runs:
       shell: bash
       env:
         VERSION: ${{ inputs.version }}
-        VERSION_SEMANTIC: ${{ inputs.version_semantic }}
