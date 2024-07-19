@@ -35,7 +35,11 @@ runs:
         java-version: '17'
         
     - name: 'Build'
-      run: mvn clean install -N
+      run: |
+        echo "Build do GED-CORE"
+        cd core
+        mvn clean install -N
+        cd ..
       shell: bash
 
     - name: 'Verificar versão'
