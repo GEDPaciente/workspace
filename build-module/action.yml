@@ -56,7 +56,7 @@ runs:
       shell: bash    
 
     - name: 'Build'
-      run: mvn clean install -N -B
+      run: mvn clean install -N -q
       shell: bash
 
     - name: 'Obtem versão atual do core no projeto'
