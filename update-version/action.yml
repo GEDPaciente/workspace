@@ -57,12 +57,12 @@ runs:
       if: env.skip_commit != 'true'
       run: |
         cd module
-        echo "Atualizando versão para $module_version"
-        mvn versions:set -DnewVersion="$module_version" -DgenerateBackupPoms=false -q
+        echo "Atualizando versão para ${{ inputs.version }}"
+        mvn versions:set -DnewVersion="${{ inputs.version }}" -DgenerateBackupPoms=false -q
         
         if [ -f package.json ]; then
-          echo "Atualizando versão no package.json"
-          jq --arg version "$module_version" '.version = $module_version' package.json > package.json.tmp
+          echo "Atualizando versão no package.json para ${{ inputs.version }}"
+          jq --arg version "$module_version" '.version = ${{ inputs.version }}' package.json > package.json.tmp
           mv package.json.tmp package.json
         fi
       shell: bash
@@ -80,7 +80,7 @@ runs:
           git add package.json
         fi
 
-        VERSION_SEMANTIC=v$module_version
+        VERSION_SEMANTIC=v${{ inputs.version }}
         
         git commit -m "Atualização de Versão - $VERSION_SEMANTIC"
         git push
