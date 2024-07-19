@@ -50,7 +50,7 @@ runs:
     - name: 'Verificar versão'
       id: get_version
       run: |
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
         echo "Versão do Modulo: $CURRENT_VERSION"
         echo "module_version=$CURRENT_VERSION" >> $GITHUB_ENV
       shell: bash    
