@@ -30,6 +30,11 @@ runs:
       with:
         github_token: ${{ inputs.github_token }}
 
+    - name: 'Finalizado build core'
+      run: |
+        echo "Core Buildado, iniciando clonagem do modulo"
+      shell: bash
+
     - name: 🚚 Atualizando projeto
       uses: actions/checkout@v3
       with:
@@ -40,32 +45,37 @@ runs:
       with:
         distribution: 'corretto'
         java-version: '17'
-        
-    - name: 'Listing all folders'
-      run: ls
-      shell: bash
       
     - name: 'Altera versão do GED CORE do modulo'
       run: |
         cd module
         echo "Atualizando versão do GED CORE para $core_version"
-        mvn versions:set-property -Dproperty="ged.core.version" -DnewVersion="$core_version" -DgenerateBackupPoms=false -B
+        mvn versions:set-property -Dproperty="ged.core.version" -DnewVersion="$core_version" -DgenerateBackupPoms=false -q
+        echo "Versão do GED CORE do Modulo foi atualizada"
       shell: bash
     
     - name: 'Verificar versão'
       id: get_version
       run: |
+        cd module
+        echo "Obtendo versão do modulo"
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
         echo "Versão do Modulo: $CURRENT_VERSION"
         echo "module_version=$CURRENT_VERSION" >> $GITHUB_ENV
       shell: bash    
 
     - name: 'Build'
-      run: mvn clean install -N -q
+      run: |
+        cd module
+        echo "Iniciando build do modulo"
+        mvn clean install -N -q
+        echo "Modulo Buildado"
       shell: bash
 
     - name: 'Obtem versão atual do core no projeto'
       run: |
+        cd module
+        echo "Obtendo valores de versão do core para comparação"
         VERSION=$(mvn help:evaluate -Dexpression="ged.core.version" -q -DforceStdout)
 
         echo "Versão do GED CORE: $VERSION"
@@ -79,6 +89,8 @@ runs:
           echo "Versão do GED CORE já é $CORE_LATEST. Nenhuma atualização necessária."
           echo "skip_commit=true" >> $GITHUB_ENV
         fi
+        
+        echo "Fim da Comparação"
 
         echo "atual_core_version=$VERSION" >> $GITHUB_ENV
       shell: bash
