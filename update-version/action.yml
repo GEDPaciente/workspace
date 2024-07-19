@@ -55,8 +55,8 @@ runs:
       if: env.skip_commit != 'true'
       run: |
         cd module
-        echo "Atualizando versão para ${{ inputs.version }}"
-        mvn versions:set -DnewVersion=${{ inputs.version }} -DgenerateBackupPoms=false
+        echo "Atualizando versão para $TO_VERSION"
+        mvn versions:set -DnewVersion="$TO_VERSION" -DgenerateBackupPoms=false -q
         
         if [ -f package.json ]; then
           echo "Atualizando versão no package.json"
@@ -64,6 +64,8 @@ runs:
           mv package.json.tmp package.json
         fi
       shell: bash
+      env: 
+        TO_VERSION: inputs.version 
 
     - name: Commit
       if: env.skip_commit != 'true'
