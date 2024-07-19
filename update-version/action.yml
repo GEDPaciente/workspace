@@ -24,7 +24,7 @@ runs:
     - name: 'Build'
       run: |
         cd module
-        mvn clean install -N
+        mvn clean install -N -q
       shell: bash
 
     - name: 🚚 Checkout Project
