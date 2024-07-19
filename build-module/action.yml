@@ -45,14 +45,6 @@ runs:
       with:
         distribution: 'corretto'
         java-version: '17'
-      
-    - name: 'Altera versão do GED CORE do modulo'
-      run: |
-        cd module
-        echo "Atualizando versão do GED CORE para $core_version"
-        mvn versions:set-property -Dproperty="ged.core.version" -DnewVersion="$core_version" -DgenerateBackupPoms=false -q
-        echo "Versão do GED CORE do Modulo foi atualizada"
-      shell: bash
     
     - name: 'Verificar versão'
       id: get_version
@@ -62,15 +54,7 @@ runs:
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
         echo "Versão do Modulo: $CURRENT_VERSION"
         echo "module_version=$CURRENT_VERSION" >> $GITHUB_ENV
-      shell: bash    
-
-    - name: 'Build'
-      run: |
-        cd module
-        echo "Iniciando build do modulo"
-        mvn clean install -N -q
-        echo "Modulo Buildado"
-      shell: bash
+      shell: bash   
 
     - name: 'Obtem versão atual do core no projeto'
       run: |
@@ -93,6 +77,23 @@ runs:
         echo "Fim da Comparação"
 
         echo "atual_core_version=$VERSION" >> $GITHUB_ENV
+      shell: bash
+
+    - name: 'Altera versão do GED CORE do modulo'
+      if: env.skip_commit != 'true'
+      run: |
+        cd module
+        echo "Atualizando versão do GED CORE para $core_version"
+        mvn versions:set-property -Dproperty="ged.core.version" -DnewVersion="$core_version" -DgenerateBackupPoms=false -q
+        echo "Versão do GED CORE do Modulo foi atualizada"
+      shell: bash
+
+    - name: 'Build'
+      run: |
+        cd module
+        echo "Iniciando build do modulo"
+        mvn clean install -N -q
+        echo "Modulo Buildado"
       shell: bash
 
     - name: Commit
