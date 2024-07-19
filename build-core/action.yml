@@ -7,7 +7,7 @@ inputs:
 outputs:
   core_version:
     description: 'Versão do GED-CORE'
-    value: ${{ steps.get_version.outputs.version }}
+    value: ${{ steps.get_version.outputs.core_version }}
 runs:
   using: 'composite'
   steps:
@@ -48,6 +48,6 @@ runs:
         cd core
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão do GED-CORE: $CURRENT_VERSION"
-        echo "version=$CURRENT_VERSION" >> $GITHUB_ENV
+        echo "core_version=$CURRENT_VERSION" >> $GITHUB_ENV
         cd ..
       shell: bash
