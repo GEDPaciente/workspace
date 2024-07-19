@@ -41,22 +41,11 @@ runs:
         cd core
         mvn clean install -N -q
       shell: bash
-      
-    - name: 'Structure Tree'
-      run: tree
-      shell: bash
-
-    - name: 'list'
-      run: ls
-      shell: bash
-      
-    - name: 'Pom Cat'
-      run: cat pom.xml
-      shell: bash
         
     - name: 'Verificar versão'
       id: get_version
       run: |
+        cd core
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão do GED-CORE: $CURRENT_VERSION"
         echo "version=$CURRENT_VERSION" >> $GITHUB_ENV
