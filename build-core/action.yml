@@ -45,7 +45,7 @@ runs:
     - name: 'Verificar versão'
       id: get_version
       run: |
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
         echo "Versão do GED-CORE: $CURRENT_VERSION"
         echo "core_version=$CURRENT_VERSION" >> $GITHUB_ENV
         cd ..
