@@ -45,9 +45,13 @@ runs:
     - name: 'Structure Tree'
       run: tree
       shell: bash
+
+    - name: 'list'
+      run: ls
+      shell: bash
       
     - name: 'Pom Cat'
-      run: cat ./pom.xml
+      run: cat pom.xml
       shell: bash
         
     - name: 'Verificar versão'
