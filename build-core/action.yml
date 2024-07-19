@@ -27,6 +27,7 @@ runs:
         ref: ${{ github.ref }}
         repository: GEDPaciente/mv-ged-core
         token: ${{ inputs.github_token }}
+        path: core
           
     - name: 'Set up JDK 17'
       uses: actions/setup-java@v4
