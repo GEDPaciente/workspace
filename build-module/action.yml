@@ -17,6 +17,11 @@ runs:
         fi
       shell: bash
 
+    - name: 'Build Core'
+      uses: ./build-core
+      with:
+        github_token: ${{ inputs.github_token }}
+
     - name: 🚚 Atualizando projeto
       uses: actions/checkout@v3
 
