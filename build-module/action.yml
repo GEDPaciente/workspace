@@ -4,6 +4,13 @@ inputs:
   github_token:
     description: 'Token de acesso ao GitHub'
     required: true
+outputs:
+  module_version:
+    description: 'Versão do Modulo'
+    value: ${{ steps.get_version.outputs.version }}
+  core_version:
+    description: 'Versão do GED-CORE'
+    value: ${{ steps.build-core.outputs.core_version }}
 runs:
   using: 'composite'
   steps:
@@ -18,6 +25,7 @@ runs:
       shell: bash
 
     - name: 'Build Core'
+      id: build-core
       uses: ./build-core
       with:
         github_token: ${{ inputs.github_token }}
@@ -31,6 +39,24 @@ runs:
         distribution: 'corretto'
         java-version: '17'
 
+    - name: 'Altera versão do GED CORE'
+      run: |
+        echo "Atualizando versão do GED CORE para $VERSION"
+        mvn versions:set-property -Dproperty="ged.core.version" -DnewVersion="$VERSION"
+      shell: bash
+      env:
+        VERSION: ${{ steps.build-core.outputs.core_version }}
+
     - name: 'Build'
       run: mvn clean install -N
       shell: bash
+
+    - name: 'Verificar versão'
+      id: get_version
+      run: |
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "Versão do Modulo: $CURRENT_VERSION"
+        echo "module_version=$CURRENT_VERSION" >> $GITHUB_ENV
+      shell: bash
+
+    

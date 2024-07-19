@@ -4,6 +4,10 @@ inputs:
   github_token:
     description: 'Token de acesso ao GitHub'
     required: true
+outputs:
+  core_version:
+    description: 'Versão do GED-CORE'
+    value: ${{ steps.get_version.outputs.version }}
 runs:
   using: 'composite'
   steps:
@@ -32,4 +36,12 @@ runs:
         
     - name: 'Build'
       run: mvn clean install -N
+      shell: bash
+
+    - name: 'Verificar versão'
+      id: get_version
+      run: |
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "Versão do GED-CORE: $CURRENT_VERSION"
+        echo "core_version=$CURRENT_VERSION" >> $GITHUB_ENV
       shell: bash
