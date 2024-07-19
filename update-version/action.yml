@@ -65,11 +65,12 @@ runs:
         fi
       shell: bash
       env: 
-        TO_VERSION: inputs.version 
+        TO_VERSION: ${{ inputs.version }}
 
     - name: Commit
       if: env.skip_commit != 'true'
       run: |
+        cd module
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         
