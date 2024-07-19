@@ -40,7 +40,6 @@ runs:
         echo "Build do GED-CORE"
         cd core
         mvn clean install -N
-        cd ..
       shell: bash
 
     - name: 'Verificar versão'
@@ -49,4 +48,5 @@ runs:
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão do GED-CORE: $CURRENT_VERSION"
         echo "core_version=$CURRENT_VERSION" >> $GITHUB_ENV
+        cd ..
       shell: bash
