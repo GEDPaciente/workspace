@@ -104,7 +104,7 @@ runs:
         git config --local user.name "GitHub Action"
         
         git add pom.xml
-        git commit -m "Atualiza versão do CORE para $core_version"
+        git commit -m "Atualização de CORE - v$core_version"
         git push
       shell: bash
 
