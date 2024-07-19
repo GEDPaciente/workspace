@@ -47,7 +47,7 @@ runs:
       shell: bash
       
     - name: 'Pom Cat'
-      run: cat pom.xml
+      run: cat ./pom.xml
       shell: bash
         
     - name: 'Verificar versão'
