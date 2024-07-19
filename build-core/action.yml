@@ -43,8 +43,12 @@ runs:
       shell: bash
       
     - name: 'Structure Tree'
-      run: | 
-        tree
+      run: tree
+      bash: shell
+      
+    - name: 'Pom Cat'
+      run: cat pom.xml
+      bash: shell
         
     - name: 'Verificar versão'
       id: get_version
