@@ -44,11 +44,11 @@ runs:
       
     - name: 'Structure Tree'
       run: tree
-      bash: shell
+      shell: bash
       
     - name: 'Pom Cat'
       run: cat pom.xml
-      bash: shell
+      shell: bash
         
     - name: 'Verificar versão'
       id: get_version
