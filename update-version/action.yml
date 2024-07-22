@@ -11,12 +11,14 @@ runs:
   using: 'composite'
   steps:
     - name: 'Build Core'
+      if: github.repository != 'GEDPaciente/core'
       id: build-core
       uses: GEDPaciente/workflows/build-core@main
       with:
         github_token: ${{ inputs.github_token }}
 
     - name: 'Finalizado build core'
+      if: github.repository != 'GEDPaciente/core'
       run: |
         echo "Core Buildado, iniciando clonagem do modulo"
       shell: bash
