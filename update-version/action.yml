@@ -36,6 +36,7 @@ runs:
     - name: 'Build'
       run: |
         cd module
+        git pull
         echo "Buildando modulo"
         mvn clean install -N -q
         echo "Modulo Buildado"
