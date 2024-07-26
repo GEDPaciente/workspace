@@ -98,7 +98,7 @@ runs:
         fi
 
         if [ "$VERSION_GAP" == "$gap_core_version" ] && [ ! -z "$VERSION_GAP" ]; then
-          echo "Versão do GED AUTH CORE já é $core_version. Nenhuma atualização necessária."
+          echo "Versão do GED AUTH CORE já é $gap_core_version. Nenhuma atualização necessária."
         else
           echo "commit_gap_core=true" >> $GITHUB_ENV
           echo "Versão do GED AUTH CORE diferente da versão atual do modulo"
