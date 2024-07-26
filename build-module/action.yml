@@ -71,6 +71,16 @@ runs:
         echo "Obtendo valores de versão do core para comparação"
         VERSION=$(mvn help:evaluate -Dexpression="ged.core.version" -q -DforceStdout)
         VERSION_GAP=$(mvn help:evaluate -Dexpression="ged.auth.core.version" -q -DforceStdout)
+        EMPTY_STRING="null or invalid object"
+
+        if [ "$VERSION" == "$EMPTY_STRING" ]; then
+          VERSION=""
+        fi
+
+        if [ "$VERSION_GAP" == "$EMPTY_STRING" ]; then
+          VERSION_GAP=""
+        fi
+      
 
         if [ -z "$VERSION" ] && [ -z "$VERSION_GAP" ]; then
           echo "Projeto não possui dependência do GED CORE ou GED AUTH CORE"
@@ -109,14 +119,6 @@ runs:
         echo "Versão do GED CORE do Modulo foi atualizada"
       shell: bash
 
-    - name: 'Build'
-      run: |
-        cd module
-        echo "Iniciando build do modulo"
-        mvn clean install -N -q
-        echo "Modulo Buildado"
-      shell: bash
-
     - name: Commit
       if: env.commit_core == 'true'
       run: |
@@ -126,7 +128,6 @@ runs:
         
         git add pom.xml
         git commit -m "Atualização de CORE - v$core_version"
-        git push
       shell: bash
 
     - name: 'Altera versão do GED AUTH CORE do modulo'
@@ -138,14 +139,6 @@ runs:
         echo "Versão do GED AUTH CORE do Modulo foi atualizada"
       shell: bash
 
-    - name: 'Build'
-      run: |
-        cd module
-        echo "Iniciando build do modulo"
-        mvn clean install -N -q
-        echo "Modulo Buildado"
-      shell: bash
-
     - name: Commit
       if: env.commit_gap_core == 'true'
       run: |
@@ -154,7 +147,24 @@ runs:
         git config --local user.name "GitHub Action"
         
         git add pom.xml
-        git commit -m "Atualização de GAP CORE - v$gap_core_version"
+        git commit -m "Atualização de GAP CORE - v$core_version"
+      shell: bash
+
+    - name: 'Build'
+      run: |
+        cd module
+        echo "Iniciando build do modulo"
+        mvn clean install -N -q
+        echo "Modulo Buildado"
+      shell: bash
+
+    - name: Push
+      if: env.commit_gap_core == 'true' || env.commit_core == 'true'
+      run: |
+        cd module
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
         git push
       shell: bash
     
