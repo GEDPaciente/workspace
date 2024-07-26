@@ -71,7 +71,7 @@ runs:
         echo "Obtendo valores de versão do core para comparação"
         VERSION=$(mvn help:evaluate -Dexpression="ged.core.version" -q -DforceStdout)
         VERSION_GAP=$(mvn help:evaluate -Dexpression="ged.auth.core.version" -q -DforceStdout)
-        EMPTY_STRING="null or invalid object"
+        EMPTY_STRING="null object or invalid expression"
 
         if [ "$VERSION" == "$EMPTY_STRING" ]; then
           VERSION=""
