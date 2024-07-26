@@ -11,6 +11,9 @@ outputs:
   core_version:
     description: 'Versão do GED-CORE'
     value: ${{ steps.build-core.outputs.core_version }}
+  gap_core_version:
+    description: 'Versão do GAP-CORE'
+    value: ${{ steps.build-core.outputs.gap_core_version }}
 runs:
   using: 'composite'
   steps:
@@ -67,28 +70,38 @@ runs:
         cd module
         echo "Obtendo valores de versão do core para comparação"
         VERSION=$(mvn help:evaluate -Dexpression="ged.core.version" -q -DforceStdout)
-
-        echo "Versão do GED CORE: $VERSION"
+        VERSION_GAP=$(mvn help:evaluate -Dexpression="ged.auth.core.version" -q -DforceStdout)
         
-        if [ -z "$VERSION" ]; then
-          echo "Versão do GED CORE não encontrada."
+        if[ -z "$VERSION" and -z "$VERSION_GAP" ]; then
+          echo "Projeto não possui dependência do GED CORE ou GED AUTH CORE"
           exit 1
         fi
 
-        if [ "$VERSION" == "$core_version" ]; then
+        echo "Versão do GED CORE: $VERSION"
+        echo "Versão do GED AUTH CORE: $VERSION_GAP"
+
+        if [ "$VERSION" == "$core_version" and not -z "$VERSION" ]; then
           echo "Versão do GED CORE já é $core_version. Nenhuma atualização necessária."
-          echo "skip_commit=true" >> $GITHUB_ENV
         else
+          echo "commit_core=true" >> $GITHUB_ENV
           echo "Versão do GED CORE diferente da versão atual do modulo"
+        fi
+
+        if [ "$VERSION_GAP" == "$core_version" and not -z "$VERSION_GAP" ]; then
+          echo "Versão do GED AUTH CORE já é $core_version. Nenhuma atualização necessária."
+        else
+          echo "commit_gap_core=true" >> $GITHUB_ENV
+          echo "Versão do GED AUTH CORE diferente da versão atual do modulo"
         fi
         
         echo "Fim da Comparação"
 
         echo "atual_core_version=$VERSION" >> $GITHUB_ENV
+        echo "atual_gap_version=$VERSION_GAP" >> $GITHUB_ENV
       shell: bash
 
     - name: 'Altera versão do GED CORE do modulo'
-      if: env.skip_commit != 'true'
+      if: env.commit_core == 'true'
       run: |
         cd module
         echo "Atualizando versão do GED CORE para $core_version"
@@ -105,7 +118,7 @@ runs:
       shell: bash
 
     - name: Commit
-      if: env.skip_commit != 'true'
+      if: env.commit_core == 'true'
       run: |
         cd module
         git config --local user.email "action@github.com"
@@ -116,4 +129,32 @@ runs:
         git push
       shell: bash
 
+    - name: 'Altera versão do GED AUTH CORE do modulo'
+      if: env.commit_gap_core == 'true'
+      run: |
+        cd module
+        echo "Atualizando versão do GED AUTH CORE para $core_version"
+        mvn versions:set-property -Dproperty="ged.auth.core.version" -DnewVersion="$gap_core_version" -DgenerateBackupPoms=false -q
+        echo "Versão do GED AUTH CORE do Modulo foi atualizada"
+      shell: bash
+
+    - name: 'Build'
+      run: |
+        cd module
+        echo "Iniciando build do modulo"
+        mvn clean install -N -q
+        echo "Modulo Buildado"
+      shell: bash
+
+    - name: Commit
+      if: env.commit_gap_core == 'true'
+      run: |
+        cd module
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        git add pom.xml
+        git commit -m "Atualização de GAP CORE - v$gap_core_version"
+        git push
+      shell: bash
     
