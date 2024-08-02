@@ -90,18 +90,29 @@ runs:
         echo "Versão do GED CORE: $VERSION"
         echo "Versão do GED AUTH CORE: $VERSION_GAP"
 
-        if [ "$VERSION" == "$core_version" ] && [ ! "$VERSION" == "" ]; then
-          echo "Versão do GED CORE já é $core_version. Nenhuma atualização necessária."
+        if [ "$VERSION" == "" ]; then
+          echo "Versão do GED CORE não encontrada no projeto"
         else
-          echo "commit_core=true" >> $GITHUB_ENV
-          echo "Versão do GED CORE diferente da versão atual do modulo"
+          
+          if [ "$VERSION" == "$core_version" ]; then
+            echo "Versão do GED CORE já é $core_version. Nenhuma atualização necessária."
+          else
+            echo "commit_core=true" >> $GITHUB_ENV
+            echo "Versão do GED CORE diferente da versão atual do modulo"
+          fi
+
         fi
 
-        if [ "$VERSION_GAP" == "$gap_core_version" ] && [ ! "$VERSION_GAP" == "" ]; then
-          echo "Versão do GED AUTH CORE já é $gap_core_version. Nenhuma atualização necessária."
+        if [ "$VERSION_GAP" == "" ]
+        then
+          echo "Versão do GED AUTH CORE não encontrada no projeto"
         else
-          echo "commit_gap_core=true" >> $GITHUB_ENV
-          echo "Versão do GED AUTH CORE diferente da versão atual do modulo"
+          if [ "$VERSION_GAP" == "$gap_core_version" ]; then
+            echo "Versão do GED AUTH CORE já é $gap_core_version. Nenhuma atualização necessária."
+          else
+            echo "commit_gap_core=true" >> $GITHUB_ENV
+            echo "Versão do GED AUTH CORE diferente da versão atual do modulo"
+          fi
         fi
 
         echo "Fim da Comparação"
