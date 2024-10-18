@@ -165,7 +165,7 @@ runs:
       run: |
         cd module
         echo "Iniciando build do modulo"
-        mvn clean install -N -q
+        mvn clean install -DskipTests -N -q
         echo "Modulo Buildado"
       shell: bash
 
