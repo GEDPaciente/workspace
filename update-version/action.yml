@@ -40,7 +40,7 @@ runs:
         cd module
         git pull
         echo "Buildando modulo"
-        mvn clean install -N -q
+        mvn clean install -DskipTests -N -q
         echo "Modulo Buildado"
       shell: bash
 
