@@ -86,8 +86,15 @@ runs:
           exit 1
         fi
 
+        echo "atual estou em:"
+        pwd
+
         # Caminho absoluto do arquivo parent pom.xml
-        ABSOLUTE_PARENT_POM=$(cd ../ && realpath "$RELATIVE_PATH")
+        ABSOLUTE_PARENT_POM=$(cd . && realpath "$RELATIVE_PATH")
+
+        
+        echo "atual estou em:"
+        pwd
 
         # Verifica se o arquivo realmente existe
         if [ ! -f "$ABSOLUTE_PARENT_POM" ]; then
