@@ -29,6 +29,12 @@ runs:
         git config --global url."https://${{ inputs.github_token }}@github.com/".insteadOf "https://github.com/"
       shell: bash
 
+    - name: 'Set up JDK 17'
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'corretto'
+        java-version: '17'
+
     - name: 'Checkout Parent Repository com Submódulos'
       uses: actions/checkout@v3
       with:
@@ -44,12 +50,6 @@ runs:
         echo "Build do parent concluído sem incluir submódulos"
         cd ..
       shell: bash
-
-    - name: 'Set up JDK 17'
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'corretto'
-        java-version: '17'
        
     - name: 'Detectar Branch do Repositório'
       id: detect_branch
@@ -71,6 +71,33 @@ runs:
         echo "Submódulo mv-ged-core atualizado para a branch ${{ env.branch_name }}"
         cd ../..
       shell: bash
+
+    - name: 'Verificar relativePath no mv-ged-core'
+      run: |
+        echo "Verificando o relativePath no POM do mv-ged-core"
+        cd parent/mv-ged-core
+        RELATIVE_PATH=$(grep '<relativePath>' pom.xml | sed -E 's|.*<relativePath>(.*)</relativePath>.*|\1|')
+        
+        # Se relativePath não estiver presente, gera erro
+        if [ -z "$RELATIVE_PATH" ]; then
+          echo "Erro: O campo <relativePath> está ausente no pom.xml do mv-ged-core."
+          exit 1
+        fi
+
+        # Caminho absoluto do arquivo parent pom.xml
+        ABSOLUTE_PARENT_POM=$(cd ../ && realpath "$RELATIVE_PATH")
+
+        # Verifica se o arquivo realmente existe
+        if [ ! -f "$ABSOLUTE_PARENT_POM" ]; then
+          echo "Erro: O arquivo parent pom.xml não foi encontrado no caminho: $ABSOLUTE_PARENT_POM"
+          exit 1
+        fi
+
+        echo "O campo <relativePath> no mv-ged-core aponta para: $RELATIVE_PATH"
+        echo "O arquivo parent pom.xml foi encontrado no caminho: $ABSOLUTE_PARENT_POM"
+        cd ../..
+      shell: bash
+
 
     - name: 'Build GED Core'
       run: |
