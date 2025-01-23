@@ -42,17 +42,6 @@ runs:
       with:
         distribution: 'corretto'
         java-version: '17'
-
-    - name: 'Build GED Core'
-      run: |
-        echo "Build do GED-CORE"
-        cd parent/mv-ged-core
-        git fetch --all
-        git checkout ${{ github.ref }}
-        git pull
-        mvn clean install -N -q
-        cd ../..
-      shell: bash
        
     - name: 'Detectar Branch do Repositório'
       id: detect_branch
