@@ -74,6 +74,8 @@ runs:
 
     - name: 'Verificar relativePath no mv-ged-core'
       run: |
+        pwd
+        tree
         echo "Verificando o relativePath no POM do mv-ged-core"
         cd parent/mv-ged-core
         RELATIVE_PATH=$(grep '<relativePath>' pom.xml | sed -E 's|.*<relativePath>(.*)</relativePath>.*|\1|')
