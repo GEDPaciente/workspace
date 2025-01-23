@@ -51,12 +51,21 @@ runs:
         echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
       shell: bash
 
+    - name: 'Debug: Listar Branches Disponíveis'
+      run: |
+        cd parent/mv-ged-core
+        echo "Branches locais disponíveis:"
+        git branch -a
+        echo "Branch atual: $(git rev-parse --abbrev-ref HEAD)"
+        cd ../..
+      shell: bash
+
     - name: 'Build GED Core com Branch Detectada'
       run: |
         echo "Build do GED-CORE usando a branch detectada"
         cd parent/mv-ged-core
-        git fetch origin
-        git checkout ${{ env.branch_name }}
+        git fetch origin # Garante que todas as branches remotas sejam buscadas
+        git checkout -B ${{ env.branch_name }} origin/${{ env.branch_name }} || git checkout ${{ env.branch_name }}
         git pull
         mvn clean install -N -q
         cd ../..
@@ -66,8 +75,8 @@ runs:
       run: |
         echo "Build do GAP-CORE"
         cd parent/mv-gap-core
-        git fetch origin
-        git checkout ${{ env.branch_name }}
+        git fetch origin # Garante que todas as branches remotas sejam buscadas
+        git checkout -B ${{ env.branch_name }} origin/${{ env.branch_name }} || git checkout ${{ env.branch_name }}
         git pull
         mvn clean install -N -q
         cd ../..
