@@ -38,6 +38,22 @@ runs:
         echo "Core Buildado, iniciando clonagem do modulo"
       shell: bash
 
+     - name:  'Checkout Parent'
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+        repository: GEDPaciente/mv-ged-parent
+        token: ${{ inputs.github_token }}
+        path: parent
+
+    - name: 'Build Parent sem Submódulos'
+      run: |
+        cd parent
+        echo "Iniciando build do parent sem submódulos"
+        mvn clean install -N -q
+        echo "Build do parent concluído sem incluir submódulos"
+      shell: bash
+
     - name: 🚚 Atualizando projeto
       uses: actions/checkout@v3
       with:
