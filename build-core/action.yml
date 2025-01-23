@@ -35,7 +35,6 @@ runs:
         repository: GEDPaciente/mv-ged-parent
         token: ${{ inputs.github_token }}
         path: parent
-        submodules: recursive # Clona os submódulos (CORE e GAP-CORE)
 
     - name: 'Set up JDK 17'
       uses: actions/setup-java@v4
@@ -51,99 +50,21 @@ runs:
         echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
       shell: bash
 
-    - name: 'Sincronizar Branches do Submódulo GED-CORE'
+    - name: 'Inicializar e Atualizar Submódulo mv-ged-core'
       run: |
-        echo "Sincronizando branches remotos do submódulo GED-CORE"
-        cd parent/mv-ged-core
-        git fetch origin # Busca todas as branches remotas
-        git branch -r # Lista as branches remotas para verificação
-        cd ../..
-      shell: bash
-
-    - name: 'Debug: Listar Branches Disponíveis'
-      run: |
-        cd parent/mv-ged-core
-        echo "Branches locais disponíveis:"
-        git branch -a
-        echo "Branch atual: $(git rev-parse --abbrev-ref HEAD)"
-        cd ../..
-      shell: bash
-
-    - name: 'Build GED Core com Branch Detectada'
-      run: |
-        echo "Build do GED-CORE usando a branch detectada"
-        cd parent/mv-ged-core
-        git fetch origin # Garante que todas as branches remotas sejam buscadas
-        git checkout -B ${{ env.branch_name }} origin/${{ env.branch_name }} || git checkout ${{ env.branch_name }}
-        git pull
-        mvn clean install -N -q
-        cd ../..
-      shell: bash
-
-
-    - name: 'Build GAP CORE'
-      run: |
-        echo "Build do GAP-CORE"
-        cd parent/mv-gap-core
-        git fetch origin # Garante que todas as branches remotas sejam buscadas
-        git checkout -B ${{ env.branch_name }} origin/${{ env.branch_name }} || git checkout ${{ env.branch_name }}
-        git pull
-        mvn clean install -N -q
-        cd ../..
-      shell: bash
-
-    - name: 'Verificar versão GAP Core'
-      id: get_gap_version
-      run: |
-        cd parent/mv-gap-core
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "Versão do GAP-CORE: $CURRENT_VERSION"
-        echo "gap_core_version=$CURRENT_VERSION" >> $GITHUB_ENV
-        cd ../..
-      shell: bash
-
-    - name: 'Atualizar Propriedades no Parent se Necessário'
-      run: |
-        echo "Verificando necessidade de atualizar as propriedades do parent"
+        echo "Inicializando e atualizando o submódulo mv-ged-core"
         cd parent
+        git submodule update --init --recursive mv-ged-core
+        cd mv-ged-core
+        git fetch origin # Garante que todas as branches remotas sejam buscadas
+        git checkout -B ${{ env.branch_name }} origin/${{ env.branch_name }} || git checkout ${{ env.branch_name }}
+        git pull
+        echo "Submódulo mv-ged-core atualizado para a branch ${{ env.branch_name }}"
+        cd ../..
+      shell: bash
 
-        # Verifica e atualiza a versão do ged.core.version
-        if grep -q "<ged.core.version>" pom.xml; then
-          CURRENT_GED_CORE_VERSION=$(grep "<ged.core.version>" pom.xml | sed -E 's/.*<ged.core.version>(.*)<\/ged.core.version>.*/\1/')
-          if [ "$CURRENT_GED_CORE_VERSION" != "${{ env.core_version }}" ]; then
-            echo "Atualizando ged.core.version de $CURRENT_GED_CORE_VERSION para ${{ env.core_version }}"
-            sed -i "s|<ged.core.version>$CURRENT_GED_CORE_VERSION</ged.core.version>|<ged.core.version>${{ env.core_version }}</ged.core.version>|g" pom.xml
-            UPDATED_GED_CORE=true
-          fi
-        fi
-
-        # Verifica e atualiza a versão do ged.auth.core.version
-        if grep -q "<ged.auth.core.version>" pom.xml; then
-          CURRENT_GED_AUTH_CORE_VERSION=$(grep "<ged.auth.core.version>" pom.xml | sed -E 's/.*<ged.auth.core.version>(.*)<\/ged.auth.core.version>.*/\1/')
-          if [ "$CURRENT_GED_AUTH_CORE_VERSION" != "${{ env.gap_core_version }}" ]; then
-            echo "Atualizando ged.auth.core.version de $CURRENT_GED_AUTH_CORE_VERSION para ${{ env.gap_core_version }}"
-            sed -i "s|<ged.auth.core.version>$CURRENT_GED_AUTH_CORE_VERSION</ged.auth.core.version>|<ged.auth.core.version>${{ env.gap_core_version }}</ged.auth.core.version>|g" pom.xml
-            UPDATED_GED_AUTH_CORE=true
-          fi
-        fi
-
-        # Commit das alterações se necessário
-        if [ "$UPDATED_GED_CORE" == "true" ] || [ "$UPDATED_GED_AUTH_CORE" == "true" ]; then
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add pom.xml
-          COMMIT_MESSAGE="Atualização de versões: "
-          if [ "$UPDATED_GED_CORE" == "true" ]; then
-            COMMIT_MESSAGE="$COMMIT_MESSAGE ged.core.version para ${{ env.core_version }}"
-          fi
-          if [ "$UPDATED_GED_AUTH_CORE" == "true" ]; then
-            COMMIT_MESSAGE="$COMMIT_MESSAGE, ged.auth.core.version para ${{ env.gap_core_version }}"
-          fi
-          git commit -m "$COMMIT_MESSAGE"
-          git push
-        else
-          echo "Nenhuma atualização necessária no pom.xml do parent"
-        fi
-
-        cd ..
+    - name: 'Forçar Falha'
+      run: |
+        echo "Forçando falha da action."
+        exit 1
       shell: bash
