@@ -4,16 +4,14 @@ inputs:
   github_token:
     description: 'Token de acesso ao GitHub'
     required: true
+  module_name:
+    description: 'Nome do módulo a ser buildado'
+    required: true
 outputs:
   module_version:
     description: 'Versão do Modulo'
     value: ${{ steps.get_version.outputs.version }}
-  core_version:
-    description: 'Versão do GED-CORE'
-    value: ${{ steps.build-core.outputs.core_version }}
-  gap_core_version:
-    description: 'Versão do GAP-CORE'
-    value: ${{ steps.build-core.outputs.gap_core_version }}
+
 runs:
   using: 'composite'
   steps:
@@ -27,23 +25,20 @@ runs:
         fi
       shell: bash
 
-    - name: 'Build Core'
-      id: build-core
-      uses: GEDPaciente/workflows/build-core@main
-      with:
-        github_token: ${{ inputs.github_token }}
-
-    - name: 'Finalizado build core'
-      run: |
-        echo "Core Buildado, iniciando clonagem do modulo"
-      shell: bash
-
-    - name:  'Checkout Parent'
+    - name: 'Checkout Parent Repository com Submódulos'
       uses: actions/checkout@v3
       with:
+        ref: ${{ github.ref }}
         repository: GEDPaciente/mv-ged-parent
         token: ${{ inputs.github_token }}
         path: parent
+        submodules: recursive
+
+    - name: 'Set up JDK 17'
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'corretto'
+        java-version: '17'
 
     - name: 'Build Parent sem Submódulos'
       run: |
@@ -53,144 +48,28 @@ runs:
         echo "Build do parent concluído sem incluir submódulos"
       shell: bash
 
-    - name: 🚚 Atualizando projeto
-      uses: actions/checkout@v3
-      with:
-        path: module
-
-    - name: Pull Project
+    - name: 'Atualizar e Inicializar Submódulos'
       run: |
-        cd module
+        cd parent
+        git submodule update --init --recursive
+        cd ${{ inputs.module_name }}
         git pull
+        echo "Submódulo '${{ inputs.module_name }}' atualizado."
       shell: bash
 
-    - name: 'Set up JDK 17'
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'corretto'
-        java-version: '17'
-    
-    - name: 'Verificar versão'
+    - name: 'Buildar o Módulo'
+      run: |
+        cd parent/${{ inputs.module_name }}
+        echo "Iniciando build do módulo específico: ${{ inputs.module_name }}"
+        mvn clean install -DskipTests -q
+        echo "Build do módulo '${{ inputs.module_name }}' concluído."
+      shell: bash
+
+    - name: 'Verificar versão do módulo'
       id: get_version
       run: |
-        cd module
-        echo "Obtendo versão do modulo"
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
-        echo "Versão do Modulo: $CURRENT_VERSION"
+        cd parent/${{ inputs.module_name }}
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "Versão do módulo '${{ inputs.module_name }}': $CURRENT_VERSION"
         echo "module_version=$CURRENT_VERSION" >> $GITHUB_ENV
-      shell: bash   
-
-    - name: 'Obtem versão atual do core no projeto'
-      run: |
-        cd module
-        echo "Obtendo valores de versão do core para comparação"
-        VERSION=$(mvn help:evaluate -Dexpression="ged.core.version" -q -DforceStdout)
-        VERSION_GAP=$(mvn help:evaluate -Dexpression="ged.auth.core.version" -q -DforceStdout)
-        EMPTY_STRING="null object or invalid expression"
-
-        if [ "$VERSION" == "$EMPTY_STRING" ]; then
-          VERSION=""
-        fi
-
-        if [ "$VERSION_GAP" == "$EMPTY_STRING" ]; then
-          VERSION_GAP=""
-        fi
-      
-
-        if [ "$VERSION" == "" ] && [ "$VERSION_GAP" == "" ]; then
-          echo "Projeto não possui dependência do GED CORE ou GED AUTH CORE"
-          exit 1
-        fi
-
-        echo "Versão do GED CORE: $VERSION"
-        echo "Versão do GED AUTH CORE: $VERSION_GAP"
-
-        if [ "$VERSION" == "" ]; then
-          echo "Versão do GED CORE não encontrada no projeto"
-        else
-          
-          if [ "$VERSION" == "$core_version" ]; then
-            echo "Versão do GED CORE já é $core_version. Nenhuma atualização necessária."
-          else
-            echo "commit_core=true" >> $GITHUB_ENV
-            echo "Versão do GED CORE diferente da versão atual do modulo"
-          fi
-
-        fi
-
-        if [ "$VERSION_GAP" == "" ]
-        then
-          echo "Versão do GED AUTH CORE não encontrada no projeto"
-        else
-          if [ "$VERSION_GAP" == "$gap_core_version" ]; then
-            echo "Versão do GED AUTH CORE já é $gap_core_version. Nenhuma atualização necessária."
-          else
-            echo "commit_gap_core=true" >> $GITHUB_ENV
-            echo "Versão do GED AUTH CORE diferente da versão atual do modulo"
-          fi
-        fi
-
-        echo "Fim da Comparação"
-
-        echo "atual_core_version=$VERSION" >> $GITHUB_ENV
-        echo "atual_gap_version=$VERSION_GAP" >> $GITHUB_ENV
       shell: bash
-
-    - name: 'Altera versão do GED CORE do modulo'
-      if: env.commit_core == 'true'
-      run: |
-        cd module
-        echo "Atualizando versão do GED CORE para $core_version"
-        mvn versions:set-property -Dproperty="ged.core.version" -DnewVersion="$core_version" -DgenerateBackupPoms=false -q
-        echo "Versão do GED CORE do Modulo foi atualizada"
-      shell: bash
-
-    - name: Commit
-      if: env.commit_core == 'true'
-      run: |
-        cd module
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        git add pom.xml
-        git commit -m "Atualização de CORE - v$core_version"
-      shell: bash
-
-    - name: 'Altera versão do GED AUTH CORE do modulo'
-      if: env.commit_gap_core == 'true'
-      run: |
-        cd module
-        echo "Atualizando versão do GED AUTH CORE para $core_version"
-        mvn versions:set-property -Dproperty="ged.auth.core.version" -DnewVersion="$gap_core_version" -DgenerateBackupPoms=false -q
-        echo "Versão do GED AUTH CORE do Modulo foi atualizada"
-      shell: bash
-
-    - name: Commit
-      if: env.commit_gap_core == 'true'
-      run: |
-        cd module
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        git add pom.xml
-        git commit -m "Atualização de GAP CORE - v$core_version"
-      shell: bash
-
-    - name: 'Build'
-      run: |
-        cd module
-        echo "Iniciando build do modulo"
-        mvn clean install -DskipTests -N -q
-        echo "Modulo Buildado"
-      shell: bash
-
-    - name: Push
-      if: env.commit_gap_core == 'true' || env.commit_core == 'true'
-      run: |
-        cd module
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        git push
-      shell: bash
-    
