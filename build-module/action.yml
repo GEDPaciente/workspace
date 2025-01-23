@@ -35,17 +35,21 @@ runs:
         distribution: 'corretto'
         java-version: '17'
 
-    - name: 'Identificar Nome do Submódulo pelo Repositório'
+    - name: 'Identificar Nome do Submódulo pelo Repositório que Disparou a Action'
       id: identify_module
       run: |
         cd parent
-        REPO_NAME=$(basename -s .git $(git config --get remote.origin.url))
-        echo "Repositório atual: $REPO_NAME"
+        # Obtém o nome do repositório que disparou a action
+        REPO_NAME=$(basename -s .git "${{ github.repository }}")
+        echo "Repositório que disparou a action: $REPO_NAME"
+
+        # Identifica o caminho do submódulo no parent baseado no repositório
         MODULE_PATH=$(git config -f .gitmodules --get-regexp "path" | grep "$REPO_NAME" | awk '{print $2}')
         if [ -z "$MODULE_PATH" ]; then
-          echo "Módulo correspondente ao repositório '$REPO_NAME' não encontrado."
+          echo "Módulo correspondente ao repositório '$REPO_NAME' não encontrado no parent."
           exit 1
         fi
+
         echo "Submódulo identificado: $MODULE_PATH"
         echo "module_path=$MODULE_PATH" >> $GITHUB_ENV
       shell: bash
