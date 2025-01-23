@@ -24,74 +24,49 @@ runs:
         fi
       shell: bash
 
-    - name: 'Checkout Repository'
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.ref }}
-        repository: GEDPaciente/mv-ged-core
-        token: ${{ inputs.github_token }}
-        path: core
-
-    - name: 'Checkout Repository'
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.ref }}
-        repository: GEDPaciente/mv-gap-core
-        token: ${{ inputs.github_token }}
-        path: gap-core
-      
-    - name:  'Checkout Parent'
+    - name: 'Checkout Parent Repository com Submódulos'
       uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
         repository: GEDPaciente/mv-ged-parent
         token: ${{ inputs.github_token }}
         path: parent
+        submodules: recursive # Clona os submódulos (CORE e GAP-CORE)
 
-    - name: 'Build Parent sem Submódulos'
-      run: |
-        cd parent
-        echo "Iniciando build do parent sem submódulos"
-        mvn clean install -N -q
-        echo "Build do parent concluído sem incluir submódulos"
-      shell: bash
-          
     - name: 'Set up JDK 17'
       uses: actions/setup-java@v4
       with:
         distribution: 'corretto'
         java-version: '17'
-        
+
     - name: 'Build GED Core'
       run: |
         echo "Build do GED-CORE"
-        cd core
+        cd parent/mv-ged-core
         mvn clean install -N -q
       shell: bash
-        
+
     - name: 'Verificar versão GED Core'
       id: get_version
       run: |
-        cd core
+        cd parent/mv-ged-core
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão do GED-CORE: $CURRENT_VERSION"
         echo "core_version=$CURRENT_VERSION" >> $GITHUB_ENV
-        cd ..
       shell: bash
 
     - name: 'Build GAP CORE'
       run: |
         echo "Build do GAP-CORE"
-        cd gap-core
+        cd parent/mv-gap-core
         mvn clean install -N -q
       shell: bash
-        
+
     - name: 'Verificar versão GAP Core'
       id: get_gap_version
       run: |
-        cd gap-core
+        cd parent/mv-gap-core
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão do GAP-CORE: $CURRENT_VERSION"
         echo "gap_core_version=$CURRENT_VERSION" >> $GITHUB_ENV
-        cd ..
       shell: bash
