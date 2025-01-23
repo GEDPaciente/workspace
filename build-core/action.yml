@@ -53,8 +53,8 @@ runs:
         mvn clean install -N -q
         cd ../..
       shell: bash
-
-        - name: 'Detectar Branch do Repositório'
+       
+    - name: 'Detectar Branch do Repositório'
       id: detect_branch
       run: |
         BRANCH_NAME=$(echo "${{ github.ref }}" | sed -E 's|refs/heads/||')
