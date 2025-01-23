@@ -1,5 +1,5 @@
-name: '🎛️ Build Core'
-description: '🚀 Realiza o build do GED-CORE'
+name: '🎛️ Build Parent com Submódulos'
+description: '🚀 Realiza o build do Parent com GED-CORE e GAP-CORE'
 inputs:
   github_token:
     description: 'Token de acesso ao GitHub'
@@ -7,10 +7,10 @@ inputs:
 outputs:
   core_version:
     description: 'Versão do GED-CORE'
-    value: ${{ steps.get_version.outputs.core_version }}
+    value: ${{ steps.get_version_core.outputs.core_version }}
   gap_core_version:
     description: 'Versão do GAP-CORE'
-    value: ${{ steps.get_gap_version.outputs.gap_core_version }}
+    value: ${{ steps.get_version_gap.outputs.gap_core_version }}
 runs:
   using: 'composite'
   steps:
@@ -41,164 +41,57 @@ runs:
         repository: GEDPaciente/mv-ged-parent
         token: ${{ inputs.github_token }}
         path: parent
+        submodules: recursive
 
-    - name: 'Build Parent sem Submódulos'
-      run: |
-        cd parent
-        echo "Iniciando build do parent sem submódulos"
-        mvn clean install -N -q
-        echo "Build do parent concluído sem incluir submódulos"
-        cd ..
-      shell: bash
-       
-    - name: 'Detectar Branch do Repositório'
-      id: detect_branch
-      run: |
-        BRANCH_NAME=$(echo "${{ github.ref }}" | sed -E 's|refs/heads/||')
-        echo "Branch detectada: $BRANCH_NAME"
-        echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
-      shell: bash
-
-    - name: 'Inicializar e Atualizar Submódulo mv-ged-core'
+    - name: 'Atualizar e Inicializar Submódulo mv-ged-core'
       run: |
         echo "Inicializando e atualizando o submódulo mv-ged-core"
         cd parent
         git submodule update --init --recursive mv-ged-core
         cd mv-ged-core
-        git fetch origin # Garante que todas as branches remotas sejam buscadas
-        git checkout -B ${{ env.branch_name }} origin/${{ env.branch_name }} || git checkout ${{ env.branch_name }}
-        git pull
-        echo "Submódulo mv-ged-core atualizado para a branch ${{ env.branch_name }}"
+        git fetch origin
+        git pull origin main
+        echo "Submódulo mv-ged-core atualizado"
         cd ../..
       shell: bash
 
-    - name: 'Verificar relativePath no mv-ged-core'
-      run: |
-        pwd
-        tree
-        echo "Verificando o relativePath no POM do mv-ged-core"
-        cd parent/mv-ged-core
-        RELATIVE_PATH=$(grep '<relativePath>' pom.xml | sed -E 's|.*<relativePath>(.*)</relativePath>.*|\1|')
-        
-        # Se relativePath não estiver presente, gera erro
-        if [ -z "$RELATIVE_PATH" ]; then
-          echo "Erro: O campo <relativePath> está ausente no pom.xml do mv-ged-core."
-          exit 1
-        fi
-
-        echo "atual estou em:"
-        pwd
-
-        # Caminho absoluto do arquivo parent pom.xml
-        ABSOLUTE_PARENT_POM=$(cd . && realpath "$RELATIVE_PATH")
-
-        
-        echo "atual estou em:"
-        pwd
-
-        # Verifica se o arquivo realmente existe
-        if [ ! -f "$ABSOLUTE_PARENT_POM" ]; then
-          echo "Erro: O arquivo parent pom.xml não foi encontrado no caminho: $ABSOLUTE_PARENT_POM"
-          exit 1
-        fi
-
-        echo "O campo <relativePath> no mv-ged-core aponta para: $RELATIVE_PATH"
-        echo "O arquivo parent pom.xml foi encontrado no caminho: $ABSOLUTE_PARENT_POM"
-        cd ../..
-      shell: bash
-
-
-    - name: 'Build GED Core'
-      run: |
-        echo "Build do GED-CORE"
-        cd parent/mv-ged-core
-        mvn clean install -N -q
-        cd ../..
-      shell: bash
-
-    - name: 'Verificar versão GED Core'
-      id: get_version
-      run: |
-        cd parent/mv-ged-core
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "Versão do GED-CORE: $CURRENT_VERSION"
-        echo "core_version=$CURRENT_VERSION" >> $GITHUB_ENV
-        cd ../..
-      shell: bash
-
-    - name: 'Inicializar e Atualizar Submódulo mv-gap-core'
+    - name: 'Atualizar e Inicializar Submódulo mv-gap-core'
       run: |
         echo "Inicializando e atualizando o submódulo mv-gap-core"
         cd parent
         git submodule update --init --recursive mv-gap-core
         cd mv-gap-core
-        git fetch origin # Garante que todas as branches remotas sejam buscadas
-        git checkout -B ${{ env.branch_name }} origin/${{ env.branch_name }} || git checkout ${{ env.branch_name }}
-        git pull
-        echo "Submódulo mv-gap-core atualizado para a branch ${{ env.branch_name }}"
+        git fetch origin
+        git pull origin main
+        echo "Submódulo mv-gap-core atualizado"
         cd ../..
       shell: bash
 
-    - name: 'Build GAP Core'
+    - name: 'Build Parent com Submódulos'
       run: |
-        echo "Build do GAP-CORE"
-        cd parent/mv-gap-core
-        mvn clean install -N -q
-        cd ../..
-      shell: bash
-
-    - name: 'Verificar versão GAP Core'
-      id: get_gap_version
-      run: |
-        cd parent/mv-gap-core
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "Versão do GAP-CORE: $CURRENT_VERSION"
-        echo "gap_core_version=$CURRENT_VERSION" >> $GITHUB_ENV
-        cd ../..
-      shell: bash
-        
-    - name: 'Atualizar Propriedades no Parent se Necessário'
-      run: |
-        echo "Verificando necessidade de atualizar as propriedades do parent"
+        echo "Iniciando build do parent com GED-CORE e GAP-CORE"
         cd parent
-
-        # Verifica e atualiza a versão do ged.core.version
-        if grep -q "<ged.core.version>" pom.xml; then
-          CURRENT_GED_CORE_VERSION=$(grep "<ged.core.version>" pom.xml | sed -E 's/.*<ged.core.version>(.*)<\/ged.core.version>.*/\1/')
-          if [ "$CURRENT_GED_CORE_VERSION" != "${{ env.core_version }}" ]; then
-            echo "Atualizando ged.core.version de $CURRENT_GED_CORE_VERSION para ${{ env.core_version }}"
-            sed -i "s|<ged.core.version>$CURRENT_GED_CORE_VERSION</ged.core.version>|<ged.core.version>${{ env.core_version }}</ged.core.version>|g" pom.xml
-            UPDATED_GED_CORE=true
-          fi
-        fi
-
-        # Verifica e atualiza a versão do ged.auth.core.version
-        if grep -q "<ged.auth.core.version>" pom.xml; then
-          CURRENT_GED_AUTH_CORE_VERSION=$(grep "<ged.auth.core.version>" pom.xml | sed -E 's/.*<ged.auth.core.version>(.*)<\/ged.auth.core.version>.*/\1/')
-          if [ "$CURRENT_GED_AUTH_CORE_VERSION" != "${{ env.gap_core_version }}" ]; then
-            echo "Atualizando ged.auth.core.version de $CURRENT_GED_AUTH_CORE_VERSION para ${{ env.gap_core_version }}"
-            sed -i "s|<ged.auth.core.version>$CURRENT_GED_AUTH_CORE_VERSION</ged.auth.core.version>|<ged.auth.core.version>${{ env.gap_core_version }}</ged.auth.core.version>|g" pom.xml
-            UPDATED_GED_AUTH_CORE=true
-          fi
-        fi
-
-        # Commit das alterações se necessário
-        if [ "$UPDATED_GED_CORE" == "true" ] || [ "$UPDATED_GED_AUTH_CORE" == "true" ]; then
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add pom.xml
-          COMMIT_MESSAGE="Atualização de versões: "
-          if [ "$UPDATED_GED_CORE" == "true" ]; then
-            COMMIT_MESSAGE="$COMMIT_MESSAGE ged.core.version para ${{ env.core_version }}"
-          fi
-          if [ "$UPDATED_GED_AUTH_CORE" == "true" ]; then
-            COMMIT_MESSAGE="$COMMIT_MESSAGE, ged.auth.core.version para ${{ env.gap_core_version }}"
-          fi
-          git commit -m "$COMMIT_MESSAGE"
-          git push
-        else
-          echo "Nenhuma atualização necessária no pom.xml do parent"
-        fi
-
+        mvn clean install -pl mv-ged-core,mv-gap-core -am -q
+        echo "Build do parent concluído com GED-CORE e GAP-CORE"
         cd ..
+      shell: bash
+
+    - name: 'Verificar versão do GED-CORE'
+      id: get_version_core
+      run: |
+        cd parent/mv-ged-core
+        CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "Versão do GED-CORE: $CORE_VERSION"
+        echo "core_version=$CORE_VERSION" >> $GITHUB_ENV
+        cd ../..
+      shell: bash
+
+    - name: 'Verificar versão do GAP-CORE'
+      id: get_version_gap
+      run: |
+        cd parent/mv-gap-core
+        GAP_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "Versão do GAP-CORE: $GAP_VERSION"
+        echo "gap_core_version=$GAP_VERSION" >> $GITHUB_ENV
+        cd ../..
       shell: bash
