@@ -24,6 +24,11 @@ runs:
         fi
       shell: bash
 
+    - name: 'Configurar Credenciais para Submódulos'
+      run: |
+        git config --global url."https://${{ inputs.github_token }}@github.com/".insteadOf "https://github.com/"
+      shell: bash
+
     - name: 'Checkout Parent Repository com Submódulos'
       uses: actions/checkout@v3
       with:

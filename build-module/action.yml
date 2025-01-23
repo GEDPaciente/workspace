@@ -35,6 +35,12 @@ runs:
         distribution: 'corretto'
         java-version: '17'
 
+    - name: 'Build Core'
+      id: build-core
+      uses: GEDPaciente/workflows/build-core@main
+      with:
+        github_token: ${{ inputs.github_token }}
+
     - name: 'Identificar Nome do Submódulo pelo Repositório que Disparou a Action'
       id: identify_module
       run: |
