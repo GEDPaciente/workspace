@@ -41,7 +41,6 @@ runs:
         repository: GEDPaciente/mv-ged-parent
         token: ${{ inputs.github_token }}
         path: parent
-        submodules: recursive
 
     - name: 'Atualizar e Inicializar Submódulo mv-ged-core'
       run: |
