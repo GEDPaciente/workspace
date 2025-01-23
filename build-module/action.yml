@@ -54,6 +54,11 @@ runs:
         echo "module_path=$MODULE_PATH" >> $GITHUB_ENV
       shell: bash
 
+    - name: 'Configurar Credenciais para Submódulos'
+      run: |
+        git config --global url."https://${{ inputs.github_token }}@github.com/".insteadOf "https://github.com/"
+      shell: bash
+
     - name: 'Inicializar e Atualizar Submódulo Identificado'
       run: |
         cd parent
