@@ -28,7 +28,6 @@ runs:
     - name: 'Checkout Parent Repository com Submódulos'
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
         repository: GEDPaciente/mv-ged-parent
         token: ${{ inputs.github_token }}
         path: parent
@@ -54,6 +53,7 @@ runs:
         git submodule update --init --recursive
         cd ${{ inputs.module_name }}
         git pull
+        git checkout ${{ github.ref }}
         echo "Submódulo '${{ inputs.module_name }}' atualizado."
       shell: bash
 
