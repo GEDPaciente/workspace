@@ -4,9 +4,6 @@ inputs:
   github_token:
     description: 'Token de acesso ao GitHub'
     required: true
-  module_name:
-    description: 'Nome do módulo a ser buildado'
-    required: true
 outputs:
   module_version:
     description: 'Versão do Modulo'
@@ -38,40 +35,42 @@ runs:
         distribution: 'corretto'
         java-version: '17'
 
-    - name: 'Build Parent sem Submódulos'
+    - name: 'Identificar Nome do Submódulo pelo Repositório'
+      id: identify_module
       run: |
         cd parent
-        echo "Iniciando build do parent sem submódulos"
-        mvn clean install -N -q
-        echo "Build do parent concluído sem incluir submódulos"
-        cd ..
+        REPO_NAME=$(basename -s .git $(git config --get remote.origin.url))
+        echo "Repositório atual: $REPO_NAME"
+        MODULE_PATH=$(git config -f .gitmodules --get-regexp "path" | grep "$REPO_NAME" | awk '{print $2}')
+        if [ -z "$MODULE_PATH" ]; then
+          echo "Módulo correspondente ao repositório '$REPO_NAME' não encontrado."
+          exit 1
+        fi
+        echo "Submódulo identificado: $MODULE_PATH"
+        echo "module_path=$MODULE_PATH" >> $GITHUB_ENV
       shell: bash
 
-    - name: 'Atualizar e Inicializar Submódulos'
+    - name: 'Inicializar e Atualizar Submódulo Identificado'
       run: |
         cd parent
-        git submodule update --init -- mv-ged-core
-        cd ${{ inputs.module_name }}
-        git pull
-        git checkout ${{ github.ref }}
-        echo "Submódulo '${{ inputs.module_name }}' atualizado."
-        cd ../..
+        git submodule update --init --recursive ${{ env.module_path }}
+        cd ..
       shell: bash
 
     - name: 'Buildar o Módulo'
       run: |
-        cd parent/${{ inputs.module_name }}
-        echo "Iniciando build do módulo específico: ${{ inputs.module_name }}"
+        cd parent/${{ env.module_path }}
+        echo "Iniciando build do módulo identificado: ${{ env.module_path }}"
         mvn clean install -DskipTests -q
-        echo "Build do módulo '${{ inputs.module_name }}' concluído."
+        echo "Build do módulo '${{ env.module_path }}' concluído."
         cd ../..
       shell: bash
 
     - name: 'Verificar versão do módulo'
       id: get_version
       run: |
-        cd parent/${{ inputs.module_name }}
+        cd parent/${{ env.module_path }}
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "Versão do módulo '${{ inputs.module_name }}': $CURRENT_VERSION"
+        echo "Versão do módulo '${{ env.module_path }}': $CURRENT_VERSION"
         echo "module_version=$CURRENT_VERSION" >> $GITHUB_ENV
       shell: bash
