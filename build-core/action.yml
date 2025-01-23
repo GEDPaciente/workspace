@@ -51,6 +51,15 @@ runs:
         echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
       shell: bash
 
+    - name: 'Sincronizar Branches do Submódulo GED-CORE'
+      run: |
+        echo "Sincronizando branches remotos do submódulo GED-CORE"
+        cd parent/mv-ged-core
+        git fetch origin # Busca todas as branches remotas
+        git branch -r # Lista as branches remotas para verificação
+        cd ../..
+      shell: bash
+
     - name: 'Debug: Listar Branches Disponíveis'
       run: |
         cd parent/mv-ged-core
@@ -70,6 +79,7 @@ runs:
         mvn clean install -N -q
         cd ../..
       shell: bash
+
 
     - name: 'Build GAP CORE'
       run: |
