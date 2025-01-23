@@ -54,13 +54,22 @@ runs:
         cd ../..
       shell: bash
 
-    - name: 'Verificar versão GED Core'
-      id: get_version
+        - name: 'Detectar Branch do Repositório'
+      id: detect_branch
       run: |
+        BRANCH_NAME=$(echo "${{ github.ref }}" | sed -E 's|refs/heads/||')
+        echo "Branch detectada: $BRANCH_NAME"
+        echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
+      shell: bash
+
+    - name: 'Build GED Core com Branch Detectada'
+      run: |
+        echo "Build do GED-CORE usando a branch detectada"
         cd parent/mv-ged-core
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "Versão do GED-CORE: $CURRENT_VERSION"
-        echo "core_version=$CURRENT_VERSION" >> $GITHUB_ENV
+        git fetch origin
+        git checkout ${{ env.branch_name }}
+        git pull
+        mvn clean install -N -q
         cd ../..
       shell: bash
 
@@ -68,8 +77,8 @@ runs:
       run: |
         echo "Build do GAP-CORE"
         cd parent/mv-gap-core
-        git fetch --all
-        git checkout ${{ github.ref }}
+        git fetch origin
+        git checkout ${{ env.branch_name }}
         git pull
         mvn clean install -N -q
         cd ../..
