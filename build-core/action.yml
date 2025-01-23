@@ -63,7 +63,7 @@ runs:
         cd ../..
       shell: bash
 
-       - name: 'Build GED Core'
+    - name: 'Build GED Core'
       run: |
         echo "Build do GED-CORE"
         cd parent/mv-ged-core
