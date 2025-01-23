@@ -47,6 +47,7 @@ runs:
       run: |
         echo "Build do GED-CORE"
         cd parent/mv-ged-core
+        git fetch --all
         git checkout ${{ github.ref }}
         git pull
         mvn clean install -N -q
@@ -67,6 +68,7 @@ runs:
       run: |
         echo "Build do GAP-CORE"
         cd parent/mv-gap-core
+        git fetch --all
         git checkout ${{ github.ref }}
         git pull
         mvn clean install -N -q
