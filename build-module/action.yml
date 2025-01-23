@@ -38,10 +38,9 @@ runs:
         echo "Core Buildado, iniciando clonagem do modulo"
       shell: bash
 
-     - name:  'Checkout Parent'
+    - name:  'Checkout Parent'
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
         repository: GEDPaciente/mv-ged-parent
         token: ${{ inputs.github_token }}
         path: parent

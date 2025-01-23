@@ -27,7 +27,6 @@ runs:
     - name: 'Checkout Parent Repository com Submódulos'
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
         repository: GEDPaciente/mv-ged-parent
         token: ${{ inputs.github_token }}
         path: parent
