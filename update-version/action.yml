@@ -132,9 +132,10 @@ runs:
         # Navegar para a pasta clônica
         cd parent-clone
 
-        echo "Dentro da pasta nova"
-        pwd
-        ls -la
+        # Inicializar e atualizar os submódulos
+        git submodule update --init --recursive
+        git submodule foreach git fetch origin
+        git submodule foreach git pull origin ${{ github.ref_name }}
 
         echo "Iniciando verificação de qual repo disparou a trigger"
 
@@ -154,7 +155,7 @@ runs:
 
         # Verificar a versão atual no pom.xml e comparar com a versão desejada
 
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression="${PROPERTY_NAME}" -f pom.xml -q -DforceStdout)
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression="${PROPERTY_NAME}" -q -DforceStdout)
 
         echo "Versão atual: $CURRENT_VERSION tentando alterar para: ${{ inputs.version }}"
         if [[ "$CURRENT_VERSION" == "${{ inputs.version }}" ]]; then
