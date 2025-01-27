@@ -51,14 +51,7 @@ runs:
         git submodule foreach git pull origin ${{ github.ref_name }}
         cd ..
       shell: bash
-
-    - name: 'Builda somente o PARENT'
-      id: build_parent
-      run: |
-        cd parent
-        mvn clean install -DskipTests -N -q
-      shell: bash
-
+      
     - name: 'Verificar versão do GED-CORE no Parent'
       id: get_version_core
       run: |
