@@ -52,11 +52,11 @@ runs:
         cd ..
       shell: bash
 
-    - name: 'Builda todos os projetos'
+    - name: 'Builda somente o PARENT'
       id: build_parent
       run: |
         cd parent
-        mvn clean install -DskipTests -q
+        mvn clean install -DskipTests -N -q
       shell: bash
 
     - name: 'Verificar versão do GED-CORE no Parent'
