@@ -84,6 +84,7 @@ runs:
         cd parent
         mvn clean package -DskipTests -q
         mkdir -p core/target
+        mkdir -p module
         cp mv-ged-core/target/*.jar core/target/
         cp mv-gap-core/target/*.jar core/target/
         echo "Arquivos JAR movidos para core/target"
