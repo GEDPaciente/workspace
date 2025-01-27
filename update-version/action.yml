@@ -129,9 +129,14 @@ runs:
         # Tentar clonar o repositório parent
         git clone https://github.com/GEDPaciente/mv-ged-parent.git parent-clone || { echo "Falha ao clonar repositório!"; exit 1; }
 
-
         # Navegar para a pasta clônica
         cd parent-clone
+
+        echo "Dentro da pasta nova"
+        pwd
+        ls -la
+
+        echo "Iniciando verificação de qual repo disparou a trigger"
 
         # Identificar a propriedade a ser alterada com base no repositório
         if [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" ]]; then
@@ -142,11 +147,15 @@ runs:
           exit 0
         fi
 
+        echo "Variavel para alteração: $PROPERTY_NAME"
+
         # Salvar a propriedade em uma variável de ambiente
         echo "PROPERTY_NAME=$PROPERTY_NAME" >> $GITHUB_ENV
 
         # Verificar a versão atual no pom.xml e comparar com a versão desejada
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+
+        echo "Versão atual: $CURRENT_VERSION tentando alterar para: ${{ inputs.version }}"
         if [[ "$CURRENT_VERSION" == "${{ inputs.version }}" ]]; then
           echo "A versão já é $CURRENT_VERSION. Nenhuma atualização necessária."
           exit 0
@@ -155,6 +164,8 @@ runs:
         # Alterar a versão do pom.xml se necessário
         echo "Atualizando versão de $CURRENT_VERSION para ${{ inputs.version }}"
         mvn versions:set-property -Dproperty=$PROPERTY_NAME -DnewVersion="${{ inputs.version }}" -q
+
+        echo "Versão alterada"
 
         # Adicionar somente o pom.xml ao staging
         git add pom.xml
