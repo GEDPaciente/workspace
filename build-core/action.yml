@@ -96,6 +96,10 @@ runs:
         cp -r parent/${{ env.repo_name }}/* module/
         echo "Arquivos do projeto movido para module"
 
-        ls -la module
-        tree
       shell: bash
+
+    - name: Fazer upload do artefato
+        uses: actions/upload-artifact@v3
+        with:
+          name: module
+          path: module

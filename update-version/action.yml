@@ -10,19 +10,18 @@ inputs:
 runs:
   using: 'composite'
   steps:
+
+    - name: Baixar o artefato
+        uses: actions/download-artifact@v3
+        with:
+          name: module
+          
     - name: 'Verificar versão do módulo'
       run: |
         cd module
         ls -la
         exit 1
       shell: bash
-
-    - name: 'Checkout Repository'
-      uses: actions/checkout@v3
-      with:
-        path: module
-        fetch-depth: 0
-        token: ${{ inputs.github_token }}
 
     - name: 'Verificar versão do módulo'
       run: |
