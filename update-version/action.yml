@@ -153,10 +153,8 @@ runs:
         echo "PROPERTY_NAME=$PROPERTY_NAME" >> $GITHUB_ENV
 
         # Verificar a versão atual no pom.xml e comparar com a versão desejada
-        echo "comando: mvn help:evaluate -Dexpression=${PROPERTY_NAME} -q -DforceStdout"
-        mvn help:evaluate -Dexpression="${PROPERTY_NAME}" -DforceStdout
 
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression="${PROPERTY_NAME}" -q -DforceStdout)
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression="${PROPERTY_NAME}" -f pom.xml -q -DforceStdout)
 
         echo "Versão atual: $CURRENT_VERSION tentando alterar para: ${{ inputs.version }}"
         if [[ "$CURRENT_VERSION" == "${{ inputs.version }}" ]]; then
