@@ -126,7 +126,11 @@ runs:
     - name: 🛠️ Atualizar versão do CORE no Parent
       if: env.skip_commit != 'true' && (github.repository == 'GEDPaciente/mv-ged-core' || github.repository == 'GEDPaciente/mv-gap-core')
       run: |
-        cd parent
+        # Clonar o repositório parent para uma nova pasta
+        git clone https://github.com/GEDPaciente/mv-ged-parent.git parent-clone
+
+        # Navegar para a pasta clônica
+        cd parent-clone
 
         # Identificar a propriedade a ser alterada com base no repositório
         if [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" ]]; then
@@ -140,16 +144,18 @@ runs:
         # Salvar a propriedade em uma variável de ambiente
         echo "PROPERTY_NAME=$PROPERTY_NAME" >> $GITHUB_ENV
 
-        echo "Tentando Atualizar versão do $PROPERTY_NAME para ${{ inputs.version }}"
+        # Verificar a versão atual no pom.xml e comparar com a versão desejada
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        if [[ "$CURRENT_VERSION" == "${{ inputs.version }}" ]]; then
+          echo "A versão já é $CURRENT_VERSION. Nenhuma atualização necessária."
+          exit 0
+        fi
+
+        # Alterar a versão do pom.xml se necessário
+        echo "Atualizando versão de $CURRENT_VERSION para ${{ inputs.version }}"
         mvn versions:set-property -Dproperty=$PROPERTY_NAME -DnewVersion="${{ inputs.version }}" -q
 
-        # Reverter as mudanças no repositório principal
-        git restore .  # Reverte as mudanças locais no repositório principal
-
-        # Reverter as alterações nos submódulos (se necessário)
-        git submodule foreach 'git restore .'
-
-        # Adicionar somente o arquivo pom.xml ao staging
+        # Adicionar somente o pom.xml ao staging
         git add pom.xml
 
         # Configurar o usuário para o commit
@@ -160,7 +166,7 @@ runs:
         git commit -m "Atualiza versão do $PROPERTY_NAME para ${{ inputs.version }}"
 
         # Fazer push da alteração para o repositório remoto
-        git push
+        git push origin HEAD:develop  # Push para a branch 'develop'
       shell: bash
 
     - name: Commit
