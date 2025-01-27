@@ -57,6 +57,7 @@ runs:
       run: |
         cd parent
         mvn clean install -DskipTests -q
+      shell: bash
 
     - name: 'Verificar versão do GED-CORE no Parent'
       id: get_version_core
