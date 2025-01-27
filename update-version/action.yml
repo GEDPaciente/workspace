@@ -130,7 +130,8 @@ runs:
     - name: 🛠️ Atualizar versão do CORE no Parent
       if: env.skip_commit != 'true' && (github.repository == 'GEDPaciente/mv-ged-core' || github.repository == 'GEDPaciente/mv-gap-core')
       run: |
-        cd module
+        cd parent
+        
         if [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" ]]; then
           PROPERTY_NAME="ged.core.version"
         elif [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-gap-core" ]]; then
