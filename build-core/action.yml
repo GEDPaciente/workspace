@@ -88,7 +88,7 @@ runs:
         cp mv-ged-core/target/*.jar core/target/
         cp mv-gap-core/target/*.jar core/target/
         echo "Arquivos JAR movidos para core/target"
-        cp "parent/${{ env.repo_name }}" module/
+        cp "${{ env.repo_name }}" module/
         echo "Arquivos do projeto movido para module"
         cd ..
       shell: bash
