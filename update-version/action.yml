@@ -128,6 +128,7 @@ runs:
       run: |
         cd parent
 
+        # Identificar a propriedade a ser alterada com base no repositório
         if [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" ]]; then
           PROPERTY_NAME="ged.core.version"
         elif [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-gap-core" ]]; then
@@ -144,19 +145,21 @@ runs:
         
         # Reverter as mudanças em todos os arquivos, incluindo submódulos
         git restore .  # Reverte as mudanças locais no repositório principal
-        git submodule foreach 'git restore .'  # Reverte as mudanças locais em submódulos
 
-        # Adicionar o arquivo pom.xml ao staging
+        # Reverter as mudanças locais nos submódulos (se necessário)
+        git submodule foreach 'git add .'
+
+        # Adicionar somente o arquivo pom.xml ao staging
         git add pom.xml
 
         # Configurar o usuário para o commit
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
 
-        # Comitar somente as mudanças no pom.xml
+        # Comitar as mudanças no pom.xml
         git commit -m "Atualiza versão do $PROPERTY_NAME para 2025.1.2-pre.9c69491"
 
-        # Fazer o push da alteração para o repositório remoto
+        # Fazer push da alteração para o repositório remoto
         git push
       shell: bash
 
