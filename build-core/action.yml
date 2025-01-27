@@ -93,7 +93,7 @@ runs:
         cp parent/mv-gap-core/target/*.jar core/target/
         echo "Arquivos JAR movidos para core/target"
 
-        cp -r parent/${{ env.repo_name }} module
+        cp -r parent/${{ env.repo_name }}/* module/
         echo "Arquivos do projeto movido para module"
 
         ls -la module
