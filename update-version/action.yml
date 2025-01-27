@@ -81,10 +81,6 @@ runs:
         
         mkdir -p core/target
         mkdir -p module
-
-        cd parent
-
-        cd ../
         
         if [[ -d "parent/mv-ged-core/target" ]]; then
           cp parent/mv-ged-core/target/*.jar core/target/
@@ -104,7 +100,13 @@ runs:
     - name: 'Verificar versão do módulo'
       run: |
         cd module
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -DforceStdout)
+
+        ls -la
+
+        tree
+        mvn help:evaluate -Dexpression=project.version -q -DforceStdout
+
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão atual: $CURRENT_VERSION"
         if [ "$CURRENT_VERSION" == "${{ inputs.version }}" ]; then
           echo "Versão atual já é $CURRENT_VERSION. Nenhuma atualização necessária."
