@@ -140,8 +140,9 @@ runs:
         echo "PROPERTY_NAME=$PROPERTY_NAME" >> $GITHUB_ENV
 
         git restore .
-
-        mvn versions:set-property -Dproperty=$PROPERTY_NAME -DnewVersion="${{ inputs.version }}"
+        
+        echo "Tentando Atualizar versão do $PROPERTY_NAME para ${{ inputs.version }}"
+        mvn versions:set-property -Dproperty=$PROPERTY_NAME -DnewVersion="${{ inputs.version }}" -q
 
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
