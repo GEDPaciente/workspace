@@ -143,7 +143,7 @@ runs:
 
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        
+
         git add pom.xml
         git commit -m "Atualiza versão do $PROPERTY_NAME para ${{ inputs.version }}"
         git push
@@ -155,6 +155,22 @@ runs:
         cd module
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
+
+        git config --local user.name "GitHub Action"
+
+        # Verificar em qual branch estamos (para evitar "detached HEAD")
+        CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+        # Se estiver em um estado "detached HEAD", volte para a branch original
+        if [[ "$CURRENT_BRANCH" == "HEAD" ]]; then
+          # Recupera a branch que disparou a action
+          CURRENT_BRANCH=${GITHUB_REF##*/}
+
+          # Faz o checkout da branch
+          git checkout "$CURRENT_BRANCH"
+        fi
+
+
         git add pom.xml
 
         if [ -f package.json ]; then
