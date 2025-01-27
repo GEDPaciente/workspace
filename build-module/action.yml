@@ -41,7 +41,7 @@ runs:
         echo "O nome do repositório que disparou a action é: $REPO_NAME"
         echo "repo_name=$REPO_NAME" >> $GITHUB_ENV
       shell: bash
-      
+
     - name: 'Build Parent e Gerar JARs'
       run: |
         cd parent
@@ -51,7 +51,7 @@ runs:
         cp mv-ged-core/target/*.jar core/target/
         cp mv-gap-core/target/*.jar core/target/
         echo "Arquivos JAR movidos para core/target"
-        cp "parent/$REPO_NAME" module/
+        cp "parent/${{ env.repo_name }}" module/
         echo "Arquivos do projeto movido para module"
         cd ..
       shell: bash
