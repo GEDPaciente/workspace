@@ -139,6 +139,8 @@ runs:
         # Salvar a propriedade em uma variável de ambiente
         echo "PROPERTY_NAME=$PROPERTY_NAME" >> $GITHUB_ENV
 
+        git restore .
+
         mvn versions:set-property -Dproperty=$PROPERTY_NAME -DnewVersion="${{ inputs.version }}"
 
         git config --local user.email "action@github.com"
@@ -155,22 +157,6 @@ runs:
         cd module
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-
-        git config --local user.name "GitHub Action"
-
-        # Verificar em qual branch estamos (para evitar "detached HEAD")
-        CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-        # Se estiver em um estado "detached HEAD", volte para a branch original
-        if [[ "$CURRENT_BRANCH" == "HEAD" ]]; then
-          # Recupera a branch que disparou a action
-          CURRENT_BRANCH=${GITHUB_REF##*/}
-
-          # Faz o checkout da branch
-          git checkout "$CURRENT_BRANCH"
-        fi
-
-
         git add pom.xml
 
         if [ -f package.json ]; then
