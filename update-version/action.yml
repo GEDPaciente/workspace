@@ -1,8 +1,8 @@
 name: '🎛️ Atualizar Versão'
-description: 'Atualiza a versão do modulo e realiza um commit.'
+description: 'Atualiza a versão do módulo e realiza um commit.'
 inputs:
   version:
-    description: 'Nova versão para ser definida no modulo.'
+    description: 'Nova versão para ser definida no módulo.'
     required: true
   github_token:
     description: 'Token para clonar workspace'
@@ -10,41 +10,14 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: 'Build Core'
-      if: github.repository != 'GEDPaciente/core'
-      id: build-core
-      uses: GEDPaciente/workflows/build-core@main
-      with:
-        github_token: ${{ inputs.github_token }}
-
-    - name: 'Finalizado build core'
-      if: github.repository != 'GEDPaciente/core'
-      run: |
-        echo "Core Buildado, iniciando clonagem do modulo"
-      shell: bash
-      
     - name: 'Checkout Repository'
       uses: actions/checkout@v3
       with:
         path: module
         fetch-depth: 0
-        
-    - name: 'Set up JDK 17'
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'corretto'
-        java-version: '17'
-        
-    - name: 'Build'
-      run: |
-        cd module
-        git pull
-        echo "Buildando modulo"
-        mvn clean install -DskipTests -N -q
-        echo "Modulo Buildado"
-      shell: bash
+        token: ${{ inputs.github_token }}
 
-    - name: Verificar versão
+    - name: 'Verificar versão do módulo'
       run: |
         cd module
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
@@ -53,22 +26,43 @@ runs:
           echo "Versão atual já é $CURRENT_VERSION. Nenhuma atualização necessária."
           echo "skip_commit=true" >> $GITHUB_ENV
         fi
-        
         echo "module_version=$CURRENT_VERSION" >> $GITHUB_ENV
       shell: bash
 
-    - name: 📝 Update Version
+    - name: 📝 Atualizar versão
       if: env.skip_commit != 'true'
       run: |
         cd module
         echo "Atualizando versão para ${{ inputs.version }}"
         mvn versions:set -DnewVersion="${{ inputs.version }}" -DgenerateBackupPoms=false -q
-        
+
         if [ -f package.json ]; then
           echo "Atualizando versão no package.json para ${{ inputs.version }}"
-          jq --arg version "$module_version" '.version = ${{ inputs.version }}' package.json > package.json.tmp
+          jq --arg version "${{ inputs.version }}" '.version = $version' package.json > package.json.tmp
           mv package.json.tmp package.json
         fi
+      shell: bash
+
+    - name: 🛠️ Atualizar versão do CORE no Parent
+      if: env.skip_commit != 'true' && (github.repository == 'GEDPaciente/mv-ged-core' || github.repository == 'GEDPaciente/mv-gap-core')
+      run: |
+        cd module
+        if [[ "$GITHUB_REPOSITORY" == "GEDPaciente/core" ]]; then
+          PROPERTY_NAME="ged.core.version"
+        elif [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-gap-core" ]]; then
+          PROPERTY_NAME="ged.auth.core.version"
+        else
+          exit 0
+        fi
+
+        # Salvar a propriedade em uma variável de ambiente
+        echo "PROPERTY_NAME=$PROPERTY_NAME" >> $GITHUB_ENV
+
+        cd ..
+        mvn versions:set-property -Dproperty=$PROPERTY_NAME -DnewVersion="${{ inputs.version }}"
+        git add pom.xml
+        git commit -m "Atualiza versão do $PROPERTY_NAME para ${{ inputs.version }}"
+        git push
       shell: bash
 
     - name: Commit
@@ -77,16 +71,14 @@ runs:
         cd module
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        
         git add pom.xml
-        
+
         if [ -f package.json ]; then
           git add package.json
         fi
 
         VERSION_SEMANTIC=v${{ inputs.version }}
-        
-        git commit -m "Atualização de Versão - $VERSION_SEMANTIC"
+        git commit -m "Atualização da versão na propriedade $PROPERTY_NAME - $VERSION_SEMANTIC"
         git push
         echo "Versão atualizada para $module_version"
       shell: bash
