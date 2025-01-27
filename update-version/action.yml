@@ -12,10 +12,10 @@ runs:
   steps:
 
     - name: Baixar o artefato
-        uses: actions/download-artifact@v3
-        with:
-          name: module
-          
+      uses: actions/download-artifact@v3
+      with:
+        name: module
+
     - name: 'Verificar versão do módulo'
       run: |
         cd module
