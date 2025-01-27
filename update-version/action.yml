@@ -10,6 +10,13 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: 'Verificar versão do módulo'
+      run: |
+        cd module
+        ls -la
+        exit 1
+      shell: bash
+
     - name: 'Checkout Repository'
       uses: actions/checkout@v3
       with:
@@ -20,7 +27,7 @@ runs:
     - name: 'Verificar versão do módulo'
       run: |
         cd module
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -DforceStdout)
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão atual: $CURRENT_VERSION"
         if [ "$CURRENT_VERSION" == "${{ inputs.version }}" ]; then
           echo "Versão atual já é $CURRENT_VERSION. Nenhuma atualização necessária."
