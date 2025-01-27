@@ -92,8 +92,8 @@ runs:
           echo "JAR GAP-CORE copiado para core/target"
         fi        
 
-        ln -s "$(pwd)/parent/${{ env.repo_name }}" module/${{ env.repo_name }}
-        echo "Symlink criado para a pasta do repositório em 'module/${{ env.repo_name }}'."
+        ln -s "$(pwd)/parent/${{ env.repo_name }}" module
+        echo "Symlink criado para a pasta do repositório em 'module"
 
       shell: bash
 
