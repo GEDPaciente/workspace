@@ -81,16 +81,20 @@ runs:
 
     - name: 'Build Parent e Gerar JARs'
       run: |
-        cd parent
-        mvn clean package -DskipTests -q
+        
         mkdir -p core/target
         mkdir -p module
-        cp mv-ged-core/target/*.jar core/target/
-        cp mv-gap-core/target/*.jar core/target/
+
+        cd parent
+        mvn clean package -DskipTests -q
+
+        cd ../
+        cp parent/mv-ged-core/target/*.jar core/target/
+        cp parent/mv-gap-core/target/*.jar core/target/
         echo "Arquivos JAR movidos para core/target"
-        cp -r ${{ env.repo_name }} module/
+
+        cp -r parent/${{ env.repo_name }} module
         echo "Arquivos do projeto movido para module"
-        cd ..
 
         ls -la module
         tree
