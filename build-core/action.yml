@@ -51,13 +51,17 @@ runs:
         git submodule foreach git pull origin ${{ github.ref_name }}
         cd ..
       shell: bash
+
+    - name: 'Builda todos os projetos'
+      id: build_parent
+      run: |
+        cd parent
+        mvn clean install -DskipTests -q
+
     - name: 'Verificar versão do GED-CORE no Parent'
       id: get_version_core
       run: |
         ls -la parent/mv-ged-core 
-        cd parent/mv-ged-core
-        echo "Tenta Retorno"
-        mvn help:evaluate -Dexpression='project.version' -DforceStdout
         CORE_VERSION=$(mvn help:evaluate -Dexpression='project.version' -q -DforceStdout)
         echo "Versão do GED-CORE: $CORE_VERSION"
         echo "core_version=$CORE_VERSION" >> $GITHUB_ENV
