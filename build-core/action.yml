@@ -48,7 +48,7 @@ runs:
         cd parent
         git submodule update --init --recursive
         git submodule foreach git fetch origin
-        git submodule foreach git pull origin main
+        git submodule foreach git pull origin ${{ github.ref_name }}
       shell: bash
 
     - name: 'Verificar versão do GED-CORE no Parent'
