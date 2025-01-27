@@ -11,10 +11,53 @@ runs:
   using: 'composite'
   steps:
 
-    - name: Baixar o artefato
-      uses: actions/download-artifact@v3
+    - name: 'Obter o nome do repositório que disparou a ação'
+      run: |
+        REPO_NAME=$(basename "${{ github.repository }}")
+        echo "O nome do repositório que disparou a action é: $REPO_NAME"
+        echo "repo_name=$REPO_NAME" >> $GITHUB_ENV
+      shell: bash
+
+    - name: 'Checkout Repositório Parent na Mesma Ref'
+      uses: actions/checkout@v3
       with:
-        name: module
+        repository: GEDPaciente/mv-ged-parent
+        token: ${{ inputs.github_token }}
+        ref: ${{ github.ref }}
+        path: parent
+
+    - name: 'Atualizar e Inicializar Submódulos'
+      run: |
+        cd parent
+        git submodule update --init --recursive
+        git submodule foreach git fetch origin
+        git submodule foreach git pull origin ${{ github.ref_name }}
+        cd ..
+      shell: bash
+
+    - name: Build do Parent, Cores e Submódulo Específico
+        run: |
+          cd parent
+          mvn clean package -pl mv-ged-core,mv-gap-core,${{ env.repo_name }} -am -DskipTests -q
+        shell: bash
+
+    - name: 'Copiar Arquivos'
+      run: |
+        
+        mkdir -p core/target
+        mkdir -p module
+
+        cd parent
+
+        cd ../
+        cp parent/mv-ged-core/target/*.jar core/target/
+        cp parent/mv-gap-core/target/*.jar core/target/
+        echo "Arquivos JAR movidos para core/target"
+
+        cp -r parent/${{ env.repo_name }}/* module/
+        echo "Arquivos do projeto movido para module"
+
+      shell: bash
 
     - name: 'Verificar versão do módulo'
       run: |
@@ -53,7 +96,7 @@ runs:
       if: env.skip_commit != 'true' && (github.repository == 'GEDPaciente/mv-ged-core' || github.repository == 'GEDPaciente/mv-gap-core')
       run: |
         cd module
-        if [[ "$GITHUB_REPOSITORY" == "GEDPaciente/core" ]]; then
+        if [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" ]]; then
           PROPERTY_NAME="ged.core.version"
         elif [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-gap-core" ]]; then
           PROPERTY_NAME="ged.auth.core.version"

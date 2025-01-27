@@ -79,27 +79,21 @@ runs:
         cd ../..
       shell: bash
 
-    - name: 'Build Parent e Gerar JARs'
+    - name: Build do Parent, Cores e Submódulo Específico
+      id: build-only-modules
       run: |
-        
-        mkdir -p core/target
-        mkdir -p module
-
         cd parent
-        mvn clean package -DskipTests -q
-
-        cd ../
-        cp parent/mv-ged-core/target/*.jar core/target/
-        cp parent/mv-gap-core/target/*.jar core/target/
-        echo "Arquivos JAR movidos para core/target"
-
-        cp -r parent/${{ env.repo_name }}/* module/
-        echo "Arquivos do projeto movido para module"
-
+        if [[ ! "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" && ! "$GITHUB_REPOSITORY" == "GEDPaciente/mv-gap-core" ]]; then
+          echo "Buildando cores e ${{env.repo_name}}"
+          mvn clean package -pl mv-ged-core,mv-gap-core,${{ env.repo_name }} -am -DskipTests -q
+        else
+            if [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" ]]; then
+              echo "Buildando somente GED-core"
+              clean package -pl mv-ged-core
+            elif [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-gap-core" ]]; then
+              echo "Buildando somente GAP-CORE"
+              clean package -pl mv-gap-core
+            fi
+        fi
+        
       shell: bash
-
-    - name: Fazer upload do artefato
-      uses: actions/upload-artifact@v3
-      with:
-        name: module
-        path: module
