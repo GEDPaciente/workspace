@@ -141,12 +141,7 @@ runs:
 
         echo "Tentando Atualizar versão do $PROPERTY_NAME para ${{ inputs.version }}"
         mvn versions:set-property -Dproperty=$PROPERTY_NAME -DnewVersion="${{ inputs.version }}" -q
-
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-
-        cd parent
-
+        
         # Reverter as mudanças em todos os arquivos, incluindo submódulos
         git restore .  # Reverte as mudanças locais no repositório principal
         git submodule foreach 'git restore .'  # Reverte as mudanças locais em submódulos
