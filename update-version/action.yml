@@ -139,16 +139,29 @@ runs:
         # Salvar a propriedade em uma variável de ambiente
         echo "PROPERTY_NAME=$PROPERTY_NAME" >> $GITHUB_ENV
 
-        git restore .
-        
         echo "Tentando Atualizar versão do $PROPERTY_NAME para ${{ inputs.version }}"
         mvn versions:set-property -Dproperty=$PROPERTY_NAME -DnewVersion="${{ inputs.version }}" -q
 
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
 
+        cd parent
+
+        # Reverter as mudanças em todos os arquivos, incluindo submódulos
+        git restore .  # Reverte as mudanças locais no repositório principal
+        git submodule foreach 'git restore .'  # Reverte as mudanças locais em submódulos
+
+        # Adicionar o arquivo pom.xml ao staging
         git add pom.xml
-        git commit -m "Atualiza versão do $PROPERTY_NAME para ${{ inputs.version }}"
+
+        # Configurar o usuário para o commit
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+        # Comitar somente as mudanças no pom.xml
+        git commit -m "Atualiza versão do $PROPERTY_NAME para 2025.1.2-pre.9c69491"
+
+        # Fazer o push da alteração para o repositório remoto
         git push
       shell: bash
 
