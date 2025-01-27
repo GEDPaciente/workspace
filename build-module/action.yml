@@ -22,9 +22,10 @@ runs:
         fi
       shell: bash
 
-    - name: 'Checkout Parent Repository com Submódulos'
+    - name: 'Checkout Repositório Parent'
       uses: actions/checkout@v3
       with:
+        ref: ${{ github.ref }}
         repository: GEDPaciente/mv-ged-parent
         token: ${{ inputs.github_token }}
         path: parent
@@ -35,57 +36,10 @@ runs:
         distribution: 'corretto'
         java-version: '17'
 
-    - name: 'Build Core'
-      id: build-core
-      uses: GEDPaciente/workflows/build-core@main
-      with:
-        github_token: ${{ inputs.github_token }}
-
-    - name: 'Identificar Nome do Submódulo pelo Repositório que Disparou a Action'
-      id: identify_module
+    - name: 'Buildar o Parent'
       run: |
         cd parent
-        # Obtém o nome do repositório que disparou a action
-        REPO_NAME=$(basename -s .git "${{ github.repository }}")
-        echo "Repositório que disparou a action: $REPO_NAME"
-
-        # Identifica o caminho do submódulo no parent baseado no repositório
-        MODULE_PATH=$(git config -f .gitmodules --get-regexp "path" | grep "$REPO_NAME" | awk '{print $2}')
-        if [ -z "$MODULE_PATH" ]; then
-          echo "Módulo correspondente ao repositório '$REPO_NAME' não encontrado no parent."
-          exit 1
-        fi
-
-        echo "Submódulo identificado: $MODULE_PATH"
-        echo "module_path=$MODULE_PATH" >> $GITHUB_ENV
-      shell: bash
-
-    - name: 'Configurar Credenciais para Submódulos'
-      run: |
-        git config --global url."https://${{ inputs.github_token }}@github.com/".insteadOf "https://github.com/"
-      shell: bash
-
-    - name: 'Inicializar e Atualizar Submódulo Identificado'
-      run: |
-        cd parent
-        git submodule update --init --recursive ${{ env.module_path }}
-        cd ..
-      shell: bash
-
-    - name: 'Buildar o Módulo'
-      run: |
-        cd parent/${{ env.module_path }}
-        echo "Iniciando build do módulo identificado: ${{ env.module_path }}"
+        echo "Iniciando build do repositório parent."
         mvn clean install -DskipTests -q
-        echo "Build do módulo '${{ env.module_path }}' concluído."
-        cd ../..
-      shell: bash
-
-    - name: 'Verificar versão do módulo'
-      id: get_version
-      run: |
-        cd parent/${{ env.module_path }}
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "Versão do módulo '${{ env.module_path }}': $CURRENT_VERSION"
-        echo "module_version=$CURRENT_VERSION" >> $GITHUB_ENV
+        echo "Build do repositório parent concluído."
       shell: bash

@@ -35,11 +35,12 @@ runs:
         distribution: 'corretto'
         java-version: '17'
 
-    - name: 'Checkout Parent Repository com Submódulos'
+    - name: 'Checkout Repositório Parent na Mesma Ref'
       uses: actions/checkout@v3
       with:
         repository: GEDPaciente/mv-ged-parent
         token: ${{ inputs.github_token }}
+        ref: ${{ github.ref }}
         path: parent
 
     - name: 'Atualizar e Inicializar Submódulo mv-ged-core'
@@ -66,6 +67,48 @@ runs:
         cd ../..
       shell: bash
 
+    - name: 'Verificar versão do GED-CORE no Parent'
+      id: get_version_core
+      run: |
+        cd parent/mv-ged-core
+        CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "Versão do GED-CORE: $CORE_VERSION"
+        echo "core_version=$CORE_VERSION" >> $GITHUB_ENV
+        cd ../..
+
+        # Verifica e altera a versão no pom.xml do Parent se necessário
+        cd parent
+        PARENT_CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        if [ "$PARENT_CORE_VERSION" != "$CORE_VERSION" ]; then
+          echo "Atualizando versão do GED-CORE no pom.xml do parent para $CORE_VERSION"
+          mvn versions:set -DnewVersion=$CORE_VERSION
+          git add pom.xml
+          git commit -m "Atualiza versão do GED-CORE para $CORE_VERSION no parent"
+        fi
+        cd ..
+      shell: bash
+
+    - name: 'Verificar versão do GAP-CORE no Parent'
+      id: get_version_gap
+      run: |
+        cd parent/mv-gap-core
+        GAP_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "Versão do GAP-CORE: $GAP_VERSION"
+        echo "gap_core_version=$GAP_VERSION" >> $GITHUB_ENV
+        cd ../..
+
+        # Verifica e altera a versão no pom.xml do Parent se necessário
+        cd parent
+        PARENT_GAP_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        if [ "$PARENT_GAP_VERSION" != "$GAP_VERSION" ]; then
+          echo "Atualizando versão do GAP-CORE no pom.xml do parent para $GAP_VERSION"
+          mvn versions:set -DnewVersion=$GAP_VERSION
+          git add pom.xml
+          git commit -m "Atualiza versão do GAP-CORE para $GAP_VERSION no parent"
+        fi
+        cd ..
+      shell: bash
+
     - name: 'Build Parent com Submódulos'
       run: |
         echo "Iniciando build do parent com GED-CORE e GAP-CORE"
@@ -75,22 +118,17 @@ runs:
         cd ..
       shell: bash
 
-    - name: 'Verificar versão do GED-CORE'
-      id: get_version_core
+    - name: 'Comitar alterações no pom.xml se necessário'
       run: |
-        cd parent/mv-ged-core
-        CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "Versão do GED-CORE: $CORE_VERSION"
-        echo "core_version=$CORE_VERSION" >> $GITHUB_ENV
-        cd ../..
-      shell: bash
-
-    - name: 'Verificar versão do GAP-CORE'
-      id: get_version_gap
-      run: |
-        cd parent/mv-gap-core
-        GAP_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "Versão do GAP-CORE: $GAP_VERSION"
-        echo "gap_core_version=$GAP_VERSION" >> $GITHUB_ENV
-        cd ../..
+        cd parent
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Alterações detectadas, comitando."
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Atualiza versões dos submódulos no pom.xml"
+          git push origin ${{ github.ref }}
+        else
+          echo "Nenhuma alteração no pom.xml"
+        fi
+        cd ..
       shell: bash
