@@ -99,7 +99,7 @@ runs:
     - name: 'Verificar versão do módulo'
       run: |
         cd module
-        
+
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão atual: $CURRENT_VERSION"
         if [ "$CURRENT_VERSION" == "${{ inputs.version }}" ]; then
@@ -138,8 +138,7 @@ runs:
 
         # Salvar a propriedade em uma variável de ambiente
         echo "PROPERTY_NAME=$PROPERTY_NAME" >> $GITHUB_ENV
-
-        cd ..
+        
         mvn versions:set-property -Dproperty=$PROPERTY_NAME -DnewVersion="${{ inputs.version }}"
         git add pom.xml
         git commit -m "Atualiza versão do $PROPERTY_NAME para ${{ inputs.version }}"
