@@ -88,12 +88,14 @@ runs:
           mvn clean package -pl mv-ged-core,mv-gap-core,${{ env.repo_name }} -am -DskipTests -q
         else
             if [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" ]]; then
-              echo "Buildando somente GED-core"
+              echo "Buildando somente GED-CORE"
               mvn clean package -pl mv-ged-core -DskipTests -q
             elif [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-gap-core" ]]; then
               echo "Buildando somente GAP-CORE"
               mvn clean package -pl mv-gap-core -DskipTests -q
             fi
         fi
+
+        echo "Build COMPLETO! ${{ env.repo_name }}"
         
       shell: bash

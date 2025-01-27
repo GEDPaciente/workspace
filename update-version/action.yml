@@ -36,10 +36,25 @@ runs:
       shell: bash
 
     - name: Build do Parent, Cores e Submódulo Específico
-        run: |
-          cd parent
+      id: build-only-modules
+      run: |
+        cd parent
+        if [[ ! "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" && ! "$GITHUB_REPOSITORY" == "GEDPaciente/mv-gap-core" ]]; then
+          echo "Buildando cores e ${{env.repo_name}}"
           mvn clean package -pl mv-ged-core,mv-gap-core,${{ env.repo_name }} -am -DskipTests -q
-        shell: bash
+        else
+            if [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" ]]; then
+              echo "Buildando somente GED-CORE"
+              mvn clean package -pl mv-ged-core -DskipTests -q
+            elif [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-gap-core" ]]; then
+              echo "Buildando somente GAP-CORE"
+              mvn clean package -pl mv-gap-core -DskipTests -q
+            fi
+        fi
+
+        echo "Build COMPLETO! ${{ env.repo_name }}"
+        
+      shell: bash
 
     - name: 'Copiar Arquivos'
       run: |
