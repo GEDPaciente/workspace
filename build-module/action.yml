@@ -42,18 +42,43 @@ runs:
         echo "repo_name=$REPO_NAME" >> $GITHUB_ENV
       shell: bash
 
-    - name: 'Build Parent e Gerar JARs'
+    - name: Build do Parent, Cores e Submódulo Específico
+      id: build-only-modules
       run: |
         cd parent
-        mvn clean package -DskipTests -q
-        mkdir -p core/target
-        mkdir -p module
-        cp mv-ged-core/target/*.jar core/target/
-        cp mv-gap-core/target/*.jar core/target/
-        echo "Arquivos JAR movidos para core/target"
-        cp -r ${{ env.repo_name }} module/
-        echo "Arquivos do projeto movido para module"
-        cd ..
+        if [[ ! "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" && ! "$GITHUB_REPOSITORY" == "GEDPaciente/mv-gap-core" ]]; then
+          echo "Buildando cores e ${{env.repo_name}}"
+          mvn clean package -pl mv-ged-core,mv-gap-core,${{ env.repo_name }} -am -DskipTests -q
+        else
+            if [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" ]]; then
+              echo "Buildando somente GED-CORE"
+              mvn clean package -pl mv-ged-core -DskipTests -q
+            elif [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-gap-core" ]]; then
+              echo "Buildando somente GAP-CORE"
+              mvn clean package -pl mv-gap-core -DskipTests -q
+            fi
+        fi
+
+        echo "Build COMPLETO! ${{ env.repo_name }}"
+        
       shell: bash
+
+    - name: 'Copiar Arquivos'
+      run: |
+        
+        mkdir -p core/target
+        
+        if [[ -d "parent/mv-ged-core/target" ]]; then
+          cp parent/mv-ged-core/target/*.jar core/target/
+          echo "JAR GED-CORE copiado para core/target"
+        fi
+
+        if [[ -d "parent/mv-gap-core/target" ]]; then        
+          cp parent/mv-gap-core/target/*.jar core/target/
+          echo "JAR GAP-CORE copiado para core/target"
+        fi        
+
+        ln -s "parent/${{ env.repo_name }}" module
+        echo "Symlink criado para a pasta do repositório em 'module'"
 
     
