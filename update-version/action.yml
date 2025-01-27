@@ -153,10 +153,9 @@ runs:
         echo "PROPERTY_NAME=$PROPERTY_NAME" >> $GITHUB_ENV
 
         # Verificar a versão atual no pom.xml e comparar com a versão desejada
-        cd ../module
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        cd ../parent-clone
-        
+
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression=$PROPERTY_NAME -q -DforceStdout)
+
         echo "Versão atual: $CURRENT_VERSION tentando alterar para: ${{ inputs.version }}"
         if [[ "$CURRENT_VERSION" == "${{ inputs.version }}" ]]; then
           echo "A versão já é $CURRENT_VERSION. Nenhuma atualização necessária."
@@ -180,7 +179,7 @@ runs:
         git commit -m "Atualiza versão do $PROPERTY_NAME para ${{ inputs.version }}"
 
         # Fazer push da alteração para o repositório remoto
-        git push origin HEAD:develop  # Push para a branch 'develop'
+        git push origin HEAD:${{ github.ref_name }}
       shell: bash
 
     - name: Commit
@@ -196,7 +195,7 @@ runs:
         fi
 
         VERSION_SEMANTIC=v${{ inputs.version }}
-        git commit -m "Atualização da versão na propriedade $PROPERTY_NAME - $VERSION_SEMANTIC"
-        git push
+        git commit -m "Atualização de Versão - $VERSION_SEMANTIC"
+        git push origin HEAD:${{ github.ref_name }}
         echo "Versão atualizada para $module_version"
       shell: bash
