@@ -85,9 +85,16 @@ runs:
         cd parent
 
         cd ../
-        cp parent/mv-ged-core/target/*.jar core/target/
-        cp parent/mv-gap-core/target/*.jar core/target/
-        echo "Arquivos JAR movidos para core/target"
+        
+        if [[ -d "parent/mv-ged-core/target" ]]; then
+          cp parent/mv-ged-core/target/*.jar core/target/
+          echo "JAR GED-CORE copiado para core/target"
+        fi
+
+        if [[ -d "parent/mv-gap-core/target" ]]; then        
+          cp parent/mv-gap-core/target/*.jar core/target/
+          echo "JAR GAP-CORE copiado para core/target"
+        fi        
 
         cp -r parent/${{ env.repo_name }}/* module/
         echo "Arquivos do projeto movido para module"
