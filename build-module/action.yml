@@ -36,10 +36,17 @@ runs:
         distribution: 'corretto'
         java-version: '17'
 
-    - name: 'Buildar o Parent'
+    - name: 'Build Parent e Gerar JARs'
       run: |
         cd parent
-        echo "Iniciando build do repositório parent."
-        mvn clean install -DskipTests -q
-        echo "Build do repositório parent concluído."
+        mvn clean package -DskipTests -q
+        mkdir -p core/target
+        cp mv-ged-core/target/*.jar core/target/
+        cp mv-gap-core/target/*.jar core/target/
+        echo "Arquivos JAR movidos para core/target"
+        cp parent/$REPO_NAME module/
+        echo "Arquivos do projeto movido para module"
+        cd ..
       shell: bash
+
+    
