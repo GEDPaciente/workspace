@@ -142,12 +142,12 @@ runs:
 
         echo "Tentando Atualizar versão do $PROPERTY_NAME para ${{ inputs.version }}"
         mvn versions:set-property -Dproperty=$PROPERTY_NAME -DnewVersion="${{ inputs.version }}" -q
-        
-        # Reverter as mudanças em todos os arquivos, incluindo submódulos
+
+        # Reverter as mudanças no repositório principal
         git restore .  # Reverte as mudanças locais no repositório principal
 
-        # Reverter as mudanças locais nos submódulos (se necessário)
-        git submodule foreach 'git add .'
+        # Reverter as alterações nos submódulos (se necessário)
+        git submodule foreach 'git restore .'
 
         # Adicionar somente o arquivo pom.xml ao staging
         git add pom.xml
@@ -157,7 +157,7 @@ runs:
         git config --local user.name "GitHub Action"
 
         # Comitar as mudanças no pom.xml
-        git commit -m "Atualiza versão do $PROPERTY_NAME para 2025.1.2-pre.9c69491"
+        git commit -m "Atualiza versão do $PROPERTY_NAME para ${{ inputs.version }}"
 
         # Fazer push da alteração para o repositório remoto
         git push
