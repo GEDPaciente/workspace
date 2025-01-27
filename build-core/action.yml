@@ -71,13 +71,13 @@ runs:
         cd ../..
       shell: bash
 
-    # - name: 'Build Parent e Gerar JARs'
-    #   run: |
-    #     cd parent
-    #     mvn clean package -DskipTests -q
-    #     mkdir -p core/target
-    #     cp mv-ged-core/target/*.jar core/target/
-    #     cp mv-gap-core/target/*.jar core/target/
-    #     echo "Arquivos JAR movidos para core/target"
-    #     cd ..
-    #   shell: bash
+    - name: 'Build Parent e Gerar JARs'
+      run: |
+        cd parent
+        mvn clean package -DskipTests -q
+        mkdir -p core/target
+        cp mv-ged-core/target/*.jar core/target/
+        cp mv-gap-core/target/*.jar core/target/
+        echo "Arquivos JAR movidos para core/target"
+        cd ..
+      shell: bash
