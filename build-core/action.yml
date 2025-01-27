@@ -55,6 +55,8 @@ runs:
     - name: 'Verificar versão do GED-CORE no Parent'
       id: get_version_core
       run: |
+        pwd
+        tree
         cd parent/mv-ged-core
         CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão do GED-CORE: $CORE_VERSION"
