@@ -154,7 +154,7 @@ runs:
 
         # Verificar a versão atual no pom.xml e comparar com a versão desejada
 
-        CURRENT_VERSION=$(mvn help:evaluate -Dexpression="${PROPERTY_NAME}" -q -DforceStdout)
+        CURRENT_VERSION=$(mvn help:evaluate -Dexpression="${PROPERTY_NAME}" -DforceStdout)
 
         echo "Versão atual: $CURRENT_VERSION tentando alterar para: ${{ inputs.version }}"
         if [[ "$CURRENT_VERSION" == "${{ inputs.version }}" ]]; then
