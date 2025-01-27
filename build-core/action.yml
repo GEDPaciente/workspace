@@ -49,6 +49,7 @@ runs:
         git submodule update --init --recursive
         git submodule foreach git fetch origin
         git submodule foreach git pull origin main
+        git submodule foreach git checkout ${{ github.ref }}
       shell: bash
 
     - name: 'Verificar versão do GED-CORE no Parent'
@@ -74,7 +75,7 @@ runs:
     - name: 'Build Parent e Gerar JARs'
       run: |
         cd parent
-        mvn clean package -DskipTests
+        mvn clean package -DskipTests -q
         mkdir -p core/target
         cp mv-ged-core/target/*.jar core/target/
         cp mv-gap-core/target/*.jar core/target/
