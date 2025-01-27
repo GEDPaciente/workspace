@@ -99,11 +99,7 @@ runs:
     - name: 'Verificar versão do módulo'
       run: |
         cd module
-
-        pwd
-
-        tree
-
+        
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão atual: $CURRENT_VERSION"
         if [ "$CURRENT_VERSION" == "${{ inputs.version }}" ]; then
@@ -131,7 +127,7 @@ runs:
       if: env.skip_commit != 'true' && (github.repository == 'GEDPaciente/mv-ged-core' || github.repository == 'GEDPaciente/mv-gap-core')
       run: |
         cd parent
-        
+
         if [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-ged-core" ]]; then
           PROPERTY_NAME="ged.core.version"
         elif [[ "$GITHUB_REPOSITORY" == "GEDPaciente/mv-gap-core" ]]; then
