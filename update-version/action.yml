@@ -133,9 +133,12 @@ runs:
         cd parent-clone
 
         # Inicializar e atualizar os submódulos
+
         git submodule update --init --recursive
         git submodule foreach git fetch origin
         git submodule foreach git pull origin ${{ github.ref_name }}
+
+        git pull origin ${{ github.ref_name }}
 
         echo "Iniciando verificação de qual repo disparou a trigger"
 
