@@ -80,7 +80,6 @@ runs:
       run: |
         
         mkdir -p core/target
-        mkdir -p module
         
         if [[ -d "parent/mv-ged-core/target" ]]; then
           cp parent/mv-ged-core/target/*.jar core/target/
@@ -93,7 +92,7 @@ runs:
         fi        
 
         ln -s "$(pwd)/parent/${{ env.repo_name }}" module
-        echo "Symlink criado para a pasta do repositório em 'module"
+        echo "Symlink criado para a pasta do repositório em 'module'"
 
       shell: bash
 
