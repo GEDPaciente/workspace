@@ -71,44 +71,6 @@ runs:
         cd ../..
       shell: bash
 
-    - name: 'Verificar versão do GED-CORE no Parent'
-      id: get_version_core
-      run: |
-        cd parent/mv-ged-core
-        CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "Versão do GED-CORE: $CORE_VERSION"
-        echo "core_version=$CORE_VERSION" >> $GITHUB_ENV
-        cd ../..
-
-        cd parent
-        POM_CORE_VERSION=$(mvn help:evaluate -Dexpression=project.properties.ged.core.version -q -DforceStdout)
-        if [ "$POM_CORE_VERSION" != "$CORE_VERSION" ]; then
-          mvn versions:set-property -Dproperty=ged.core.version -DnewVersion=$CORE_VERSION
-          git add pom.xml
-          git commit -m "Atualiza versão do GED-CORE para $CORE_VERSION no parent"
-        fi
-        cd ..
-      shell: bash
-
-    - name: 'Verificar versão do GAP-CORE no Parent'
-      id: get_version_gap
-      run: |
-        cd parent/mv-gap-core
-        GAP_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        echo "Versão do GAP-CORE: $GAP_VERSION"
-        echo "gap_core_version=$GAP_VERSION" >> $GITHUB_ENV
-        cd ../..
-
-        cd parent
-        POM_GAP_VERSION=$(mvn help:evaluate -Dexpression=project.properties.ged.auth.core.version -q -DforceStdout)
-        if [ "$POM_GAP_VERSION" != "$GAP_VERSION" ]; then
-          mvn versions:set-property -Dproperty=ged.auth.core.version -DnewVersion=$GAP_VERSION
-          git add pom.xml
-          git commit -m "Atualiza versão do GAP-CORE para $GAP_VERSION no parent"
-        fi
-        cd ..
-      shell: bash
-
     - name: 'Build Parent e Gerar JARs'
       run: |
         cd parent
