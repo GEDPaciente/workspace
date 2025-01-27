@@ -92,19 +92,14 @@ runs:
           echo "JAR GAP-CORE copiado para core/target"
         fi        
 
-        cp -r parent/${{ env.repo_name }}/* module/
-        echo "Arquivos do projeto movido para module"
+        ln -s "$(pwd)/parent/${{ env.repo_name }}" module/${{ env.repo_name }}
+        echo "Symlink criado para a pasta do repositório em 'module/${{ env.repo_name }}'."
 
       shell: bash
 
     - name: 'Verificar versão do módulo'
       run: |
         cd module
-
-        ls -la
-
-        tree
-        mvn help:evaluate -Dexpression=project.version -q -DforceStdout
 
         CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "Versão atual: $CURRENT_VERSION"
