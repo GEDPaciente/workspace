@@ -126,8 +126,9 @@ runs:
     - name: 🛠️ Atualizar versão do CORE no Parent
       if: env.skip_commit != 'true' && (github.repository == 'GEDPaciente/mv-ged-core' || github.repository == 'GEDPaciente/mv-gap-core')
       run: |
-        # Clonar o repositório parent para uma nova pasta
-        git clone https://github.com/GEDPaciente/mv-ged-parent.git parent-clone
+        # Tentar clonar o repositório parent
+        git clone https://github.com/GEDPaciente/mv-ged-parent.git parent-clone || { echo "Falha ao clonar repositório!"; exit 1; }
+
 
         # Navegar para a pasta clônica
         cd parent-clone
