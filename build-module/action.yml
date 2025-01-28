@@ -80,5 +80,6 @@ runs:
 
         ln -s "parent/${{ env.repo_name }}" module
         echo "Symlink criado para a pasta do repositório em 'module'"
+      shell: bash
 
     
